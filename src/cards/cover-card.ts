@@ -1,6 +1,7 @@
 import { css, html } from "lit";
 import { LuxBaseCard } from "../shared/base-card";
 import { clamp, entityName, fireMoreInfo, isUnavailable, numAttr, startDrag } from "../shared/helpers";
+import { defineEditor } from "../shared/editor";
 import { PendingValue } from "../shared/pending-value";
 import type { LovelaceCardConfig } from "../shared/types";
 
@@ -10,7 +11,30 @@ export interface CoverCardConfig extends LovelaceCardConfig {
   room?: string;
   /** Quick positions in percent of opening. */
   presets?: number[];
+  compact?: boolean;
 }
+
+const getConfigElement = defineEditor("luxury-cover-card-editor", {
+  schema: [
+    { name: "entity", required: true, selector: { entity: { domain: "cover" } } },
+    { type: "grid", name: "", schema: [
+      { name: "name", selector: { text: {} } },
+      { name: "room", selector: { text: {} } },
+    ] },
+    { name: "presets", selector: { text: {} } },
+    { name: "compact", selector: { boolean: {} } },
+  ],
+  labels: { presets: "Aperture rapide in % (es. 25, 50, 75)" },
+  // The form edits presets as text: "25, 50, 75"
+  toForm: (c) => ({ ...c, presets: ((c.presets as number[] | undefined) ?? [25, 50, 75]).join(", ") }),
+  fromForm: (data, prev) => {
+    const presets = String(data.presets ?? "")
+      .split(/[,;\s]+/)
+      .map(Number)
+      .filter((n) => Number.isFinite(n) && n >= 0 && n <= 100);
+    return { ...prev, ...data, presets: presets.length ? presets : undefined };
+  },
+});
 
 // Home Assistant CoverEntityFeature.SET_POSITION
 const SUPPORT_SET_POSITION = 4;
@@ -22,11 +46,11 @@ export class LuxCoverCard extends LuxBaseCard<CoverCardConfig> {
   static styles = [
     ...LuxBaseCard.styles,
     css`
-      .body { display: grid; grid-template-columns: 112px 1fr; gap: 24px; align-items: center; }
+      .body { display: grid; grid-template-columns: 84px 1fr; gap: 18px; align-items: center; }
       .window {
         position: relative;
-        height: 164px;
-        border-radius: 14px;
+        height: 120px;
+        border-radius: 12px;
         border: 1px solid var(--line-2);
         background: linear-gradient(180deg, #2b2620 0%, #1e1b17 60%, #171512 100%);
         overflow: hidden;
@@ -62,13 +86,13 @@ export class LuxCoverCard extends LuxBaseCard<CoverCardConfig> {
         height: 3px;
         background: linear-gradient(90deg, var(--gold-lo), var(--gold-hi), var(--gold-lo));
       }
-      .info .num { font-size: 56px; line-height: 1; }
-      .info .unit { font-size: 20px; }
-      .state { color: var(--muted); font-size: 12.5px; margin: 6px 0 18px; }
+      .info .num { font-size: 42px; line-height: 1; }
+      .info .unit { font-size: 17px; }
+      .state { color: var(--muted); font-size: 12px; margin: 4px 0 12px; }
       .controls { display: flex; gap: 8px; }
       .round-btn {
-        width: 44px;
-        height: 44px;
+        width: 38px;
+        height: 38px;
         border-radius: 50%;
         border: 1px solid var(--line-2);
         background: transparent;
@@ -80,14 +104,14 @@ export class LuxCoverCard extends LuxBaseCard<CoverCardConfig> {
       .round-btn:hover { border-color: var(--gold-edge); background: var(--gold-tint); }
       .round-btn:active { transform: scale(0.94); }
       .round-btn:disabled { opacity: 0.4; cursor: default; }
-      .round-btn svg { width: 18px; height: 18px; }
-      .chips { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 20px; }
+      .round-btn svg { width: 16px; height: 16px; }
+      .chips { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 14px; }
       .chip {
         border: 1px solid var(--line-2);
         background: transparent;
         color: var(--muted);
-        font-size: 12px;
-        padding: 8px 14px;
+        font-size: 11.5px;
+        padding: 6px 12px;
         border-radius: 99px;
         cursor: pointer;
         transition: all 0.3s var(--ease);
@@ -113,11 +137,22 @@ export class LuxCoverCard extends LuxBaseCard<CoverCardConfig> {
         animation: pulse 2s infinite;
       }
       @keyframes pulse { 50% { opacity: 0.35; } }
-      @media (max-width: 420px) {
-        .body { grid-template-columns: 96px 1fr; gap: 18px; }
+      /* Compact: no window drawing, everything on one row */
+      :host([compact]) .body { grid-template-columns: 1fr; }
+      :host([compact]) .window { display: none; }
+      :host([compact]) .info { display: flex; align-items: center; gap: 12px; }
+      :host([compact]) .info .num { font-size: 30px; }
+      :host([compact]) .state { display: none; }
+      :host([compact]) .controls { margin-left: auto; }
+      :host([compact]) .chips { display: none; }
+      @container (max-width: 260px) {
+        .body { grid-template-columns: 64px 1fr; gap: 12px; }
+        .window { height: 100px; }
       }
     `,
   ];
+
+  static getConfigElement = getConfigElement;
 
   static getStubConfig() {
     return { entity: "cover.example", room: "Camera" };

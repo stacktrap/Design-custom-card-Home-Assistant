@@ -1,6 +1,7 @@
 import { css, html, svg, nothing } from "lit";
 import { LuxBaseCard } from "../shared/base-card";
 import { clamp, fireMoreInfo, numState } from "../shared/helpers";
+import { defineEditor } from "../shared/editor";
 import type { HassEntity, LovelaceCardConfig } from "../shared/types";
 
 interface EnergyEntities {
@@ -30,7 +31,62 @@ export interface EnergyCardConfig extends LovelaceCardConfig {
   invert_battery?: boolean;
   /** Show today's consumption chart. Needs `entities.home`. Default true. */
   history?: boolean;
+  compact?: boolean;
 }
+
+const sensor = (device_class: string) => ({ entity: { domain: "sensor", device_class } });
+
+const getConfigElement = defineEditor("luxury-energy-card-editor", {
+  schema: [
+    { type: "grid", name: "", schema: [
+      { name: "title", selector: { text: {} } },
+      { name: "room", selector: { text: {} } },
+    ] },
+    {
+      type: "expandable",
+      name: "entities",
+      title: "Sensori",
+      schema: [
+        { name: "home", selector: sensor("power") },
+        { name: "solar", selector: sensor("power") },
+        { name: "grid", selector: sensor("power") },
+        { name: "battery", selector: sensor("power") },
+        { name: "battery_soc", selector: sensor("battery") },
+        { name: "consumption_today", selector: sensor("energy") },
+        { name: "production_today", selector: sensor("energy") },
+        { name: "grid_import_today", selector: sensor("energy") },
+      ],
+    },
+    { type: "grid", name: "", schema: [
+      { name: "invert_grid", selector: { boolean: {} } },
+      { name: "invert_battery", selector: { boolean: {} } },
+      { name: "history", selector: { boolean: {} } },
+      { name: "compact", selector: { boolean: {} } },
+    ] },
+  ],
+  labels: {
+    title: "Titolo",
+    home: "Consumo casa (potenza)",
+    solar: "Produzione solare (potenza)",
+    grid: "Rete (potenza, + prelievo)",
+    battery: "Batteria (potenza, + in carica)",
+    battery_soc: "Batteria (%)",
+    consumption_today: "Energia consumata oggi",
+    production_today: "Energia prodotta oggi",
+    grid_import_today: "Energia prelevata oggi",
+    invert_grid: "Inverti segno rete",
+    invert_battery: "Inverti segno batteria",
+    history: "Grafico di oggi",
+  },
+  toForm: (c) => ({ ...c, entities: c.entities ?? {}, history: c.history ?? true }),
+  // Drop cleared sensors so they do not end up as empty strings in YAML
+  fromForm: (data, prev) => {
+    const entities = Object.fromEntries(
+      Object.entries((data.entities as Record<string, string>) ?? {}).filter(([, v]) => !!v),
+    );
+    return { ...prev, ...data, entities };
+  },
+});
 
 type HistoryResponse = Record<string, Array<{ s: string; lu: number }>>;
 
@@ -111,10 +167,10 @@ export class LuxEnergyCard extends LuxBaseCard<EnergyCardConfig> {
       }
       @keyframes pulse { 50% { opacity: 0.35; } }
       .hero { display: flex; align-items: baseline; gap: 6px; }
-      .hero .num { font-size: 56px; line-height: 1; }
-      .hero .unit { font-size: 20px; }
-      .caption { color: var(--muted); font-size: 12.5px; margin: 6px 0 14px; }
-      .flow { width: 100%; display: block; }
+      .hero .num { font-size: 42px; line-height: 1; }
+      .hero .unit { font-size: 17px; }
+      .caption { color: var(--muted); font-size: 12px; margin: 4px 0 8px; }
+      .flow { width: 100%; max-width: 340px; margin: 0 auto; display: block; }
       .node { fill: var(--surface); stroke: var(--line-2); stroke-width: 1; cursor: pointer; }
       .node.hot { stroke: var(--gold-edge); }
       .glyph { fill: none; stroke: var(--gold-hi); stroke-width: 1.3; stroke-linecap: round; stroke-linejoin: round; pointer-events: none; }
@@ -124,19 +180,26 @@ export class LuxEnergyCard extends LuxBaseCard<EnergyCardConfig> {
       @keyframes flow { to { stroke-dashoffset: -17; } }
       .flow text { fill: var(--muted); font-size: 8px; letter-spacing: 0.14em; text-transform: uppercase; font-family: var(--font); }
       .flow text.v { fill: var(--text); font-size: 11.5px; letter-spacing: 0; text-transform: none; }
-      .battery { display: flex; align-items: center; gap: 14px; margin: 14px 0 20px; font-size: 12.5px; color: var(--muted); }
+      .battery { display: flex; align-items: center; gap: 12px; margin: 8px 0 12px; font-size: 12.5px; color: var(--muted); }
       .battery b { color: var(--text); font-weight: 500; }
       .bar { flex: 1; height: 4px; border-radius: 4px; background: var(--surface-hi); overflow: hidden; }
       .bar span { display: block; height: 100%; border-radius: inherit; background: linear-gradient(90deg, var(--gold-lo), var(--gold-hi)); transition: width 0.8s var(--ease); }
-      .spark { width: 100%; height: 72px; display: block; margin-top: 6px; }
+      .spark { width: 100%; height: 56px; display: block; margin-top: 4px; }
       .axis { display: flex; justify-content: space-between; font-size: 10px; color: var(--faint); margin-top: 6px; letter-spacing: 0.08em; }
-      .stats { display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; margin-top: 20px; border-top: 1px solid var(--line); padding-top: 18px; }
+      .stats { display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; margin-top: 14px; border-top: 1px solid var(--line); padding-top: 12px; }
       .stat + .stat { border-left: 1px solid var(--line); padding-left: 14px; }
       .stat .k { font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--muted); }
-      .stat .v { font-size: 20px; font-weight: 300; margin-top: 6px; }
+      .stat .v { font-size: 18px; font-weight: 300; margin-top: 4px; }
+      /* Compact: live numbers and flow only */
+      :host([compact]) .hero .num { font-size: 32px; }
+      :host([compact]) .spark,
+      :host([compact]) .axis,
+      :host([compact]) .stats { display: none; }
       .stat .v small { font-size: 11px; color: var(--gold); margin-left: 2px; }
     `,
   ];
+
+  static getConfigElement = getConfigElement;
 
   static getStubConfig() {
     return { entities: { home: "sensor.home_power", solar: "sensor.solar_power", grid: "sensor.grid_power" } };
@@ -152,6 +215,10 @@ export class LuxEnergyCard extends LuxBaseCard<EnergyCardConfig> {
 
   getCardSize() {
     return 8;
+  }
+
+  getGridOptions() {
+    return { columns: 12, min_columns: 6 };
   }
 
   protected watchedEntities() {
@@ -220,7 +287,7 @@ export class LuxEnergyCard extends LuxBaseCard<EnergyCardConfig> {
     const r = (key: string) => (key === "home" ? 24 : 22);
 
     return html`
-      <svg class="flow" viewBox="0 0 300 120">
+      <svg class="flow" viewBox="0 16 300 100">
         ${nodes.slice(1).map((n, k) => {
           const prev = nodes[k];
           const x1 = xs[k] + r(prev.key);

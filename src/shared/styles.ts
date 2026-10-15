@@ -24,12 +24,13 @@ export const tokens = css`
     --gold-edge: var(--lux-accent-edge, rgba(200, 164, 106, 0.28));
     --on-gold: var(--lux-on-accent, #1a1714);
 
-    --radius: var(--lux-radius, 28px);
-    --radius-sm: var(--lux-radius-sm, 16px);
+    --radius: var(--lux-radius, 24px);
+    --radius-sm: var(--lux-radius-sm, 14px);
     --ease: cubic-bezier(0.22, 0.8, 0.24, 1);
     --font: var(--lux-font, "Manrope", -apple-system, "Helvetica Neue", sans-serif);
 
     display: block;
+    container-type: inline-size;
     font-family: var(--font);
     color: var(--text);
     -webkit-font-smoothing: antialiased;
@@ -44,7 +45,7 @@ export const cardStyles = css`
     position: relative;
     overflow: hidden;
     border-radius: var(--radius);
-    padding: 24px;
+    padding: 20px;
     background: linear-gradient(180deg, var(--card-top), var(--card-bottom));
     border: 1px solid var(--line);
     box-shadow: 0 40px 80px -40px rgba(0, 0, 0, 0.9), inset 0 1px 0 rgba(255, 255, 255, 0.035);
@@ -60,15 +61,18 @@ export const cardStyles = css`
     align-items: center;
     justify-content: space-between;
     gap: 12px;
-    margin-bottom: 20px;
+    margin-bottom: 16px;
   }
-  .card-title { font-size: 15px; font-weight: 500; margin: 0; }
+  :host([compact]) .card { padding: 14px 16px; }
+  :host([compact]) .card-head { margin-bottom: 10px; }
+  .card-title { font-size: 14.5px; font-weight: 500; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .card-head > :first-child { min-width: 0; }
   .card-sub {
     font-size: 10.5px;
     letter-spacing: 0.2em;
     text-transform: uppercase;
     color: var(--muted);
-    margin: 0 0 5px;
+    margin: 0 0 4px;
   }
   .clickable { cursor: pointer; }
 

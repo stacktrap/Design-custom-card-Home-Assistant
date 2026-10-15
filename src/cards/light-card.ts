@@ -10,6 +10,7 @@ import {
   supportsBrightness,
   toggle,
 } from "../shared/helpers";
+import { defineEditor, ICON_SELECTOR } from "../shared/editor";
 import { renderIcon } from "../shared/icons";
 import "../shared/lux-slider";
 import { PendingValue } from "../shared/pending-value";
@@ -22,7 +23,25 @@ export interface LightCardConfig extends LovelaceCardConfig {
   icon?: string;
   /** Show the brightness slider. Defaults to true when the light is dimmable. */
   brightness?: boolean;
+  compact?: boolean;
 }
+
+const getConfigElement = defineEditor("luxury-light-card-editor", {
+  schema: [
+    { name: "entity", required: true, selector: { entity: { filter: [{ domain: "light" }, { domain: "switch" }] } } },
+    { type: "grid", name: "", schema: [
+      { name: "name", selector: { text: {} } },
+      { name: "room", selector: { text: {} } },
+    ] },
+    { name: "icon", selector: ICON_SELECTOR },
+    { type: "grid", name: "", schema: [
+      { name: "brightness", selector: { boolean: {} } },
+      { name: "compact", selector: { boolean: {} } },
+    ] },
+  ],
+  labels: { brightness: "Slider luminosità (se supportata)" },
+  toForm: (c) => ({ ...c, brightness: c.brightness ?? true }),
+});
 
 /** Compact card for a single light or switch, with an optional slim brightness slider. */
 export class LuxLightCard extends LuxBaseCard<LightCardConfig> {
@@ -31,17 +50,23 @@ export class LuxLightCard extends LuxBaseCard<LightCardConfig> {
   static styles = [
     ...LuxBaseCard.styles,
     css`
-      .card { padding: 20px; }
+      .card { padding: 16px 18px; }
       .card.on { border-color: var(--gold-edge); }
-      .row { display: flex; align-items: center; gap: 14px; }
-      .ico { width: 46px; height: 46px; cursor: pointer; }
+      .row { display: flex; align-items: center; gap: 12px; }
+      .ico { width: 40px; height: 40px; cursor: pointer; }
       .text { flex: 1; min-width: 0; cursor: pointer; }
       .card-title { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
       .state { font-size: 12px; color: var(--muted); margin-top: 3px; }
       .on .state { color: var(--gold-hi); }
-      lux-slider { margin-top: 18px; --slider-height: 34px; --slider-radius: 12px; }
+      lux-slider { margin-top: 14px; --slider-height: 30px; --slider-radius: 10px; }
+      :host([compact]) .card { padding: 10px 14px; }
+      :host([compact]) .ico { width: 34px; height: 34px; }
+      :host([compact]) .card-sub { display: none; }
+      :host([compact]) lux-slider { margin-top: 10px; --slider-height: 24px; --slider-radius: 8px; }
     `,
   ];
+
+  static getConfigElement = getConfigElement;
 
   static getStubConfig() {
     return { entity: "light.example", room: "Camera" };

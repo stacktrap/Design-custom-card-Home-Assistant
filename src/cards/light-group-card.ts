@@ -10,6 +10,7 @@ import {
   toggle,
   turnOnOff,
 } from "../shared/helpers";
+import { defineEditor } from "../shared/editor";
 import { renderIcon } from "../shared/icons";
 import type { LovelaceCardConfig } from "../shared/types";
 
@@ -26,7 +27,39 @@ export interface LightGroupCardConfig extends LovelaceCardConfig {
   columns?: number;
   /** Show the master switch that turns every light on or off. */
   master?: boolean;
+  compact?: boolean;
 }
+
+const getConfigElement = defineEditor("luxury-light-group-card-editor", {
+  schema: [
+    { name: "title", selector: { text: {} } },
+    { name: "entities", required: true, selector: { entity: { multiple: true, filter: [{ domain: "light" }, { domain: "switch" }] } } },
+    {
+      type: "grid",
+      name: "",
+      schema: [
+        { name: "columns", selector: { number: { min: 1, max: 4, mode: "box" } } },
+        { name: "master", selector: { boolean: {} } },
+        { name: "compact", selector: { boolean: {} } },
+      ],
+    },
+  ],
+  labels: { title: "Stanza", entities: "Luci", columns: "Colonne", master: "Interruttore generale" },
+  toForm: (c) => ({
+    ...c,
+    master: c.master ?? true,
+    columns: c.columns ?? 2,
+    entities: ((c.entities as LightGroupCardConfig["entities"]) ?? []).map((e) => (typeof e === "string" ? e : e.entity)),
+  }),
+  // Keep per-light name/icon from YAML for lights that are still selected
+  fromForm: (data, prev) => {
+    const old = (prev.entities as LightGroupCardConfig["entities"]) ?? [];
+    const entities = ((data.entities as string[]) ?? []).map(
+      (id) => old.find((e) => typeof e !== "string" && e.entity === id) ?? id,
+    );
+    return { ...prev, ...data, entities };
+  },
+});
 
 const HOLD_MS = 500;
 
@@ -39,14 +72,14 @@ export class LuxLightGroupCard extends LuxBaseCard<LightGroupCardConfig> {
   static styles = [
     ...LuxBaseCard.styles,
     css`
-      .tiles { display: grid; grid-template-columns: repeat(var(--cols, 2), minmax(0, 1fr)); gap: 10px; }
+      .tiles { display: grid; grid-template-columns: repeat(var(--cols, 2), minmax(0, 1fr)); gap: 8px; }
       .tile {
         text-align: left;
         border: 1px solid var(--line);
         background: var(--surface);
         border-radius: var(--radius-sm);
-        padding: 16px;
-        min-height: 116px;
+        padding: 12px 14px;
+        min-height: 92px;
         display: flex;
         flex-direction: column;
         justify-content: space-between;
@@ -56,8 +89,14 @@ export class LuxLightGroupCard extends LuxBaseCard<LightGroupCardConfig> {
       }
       .tile:active { transform: scale(0.98); }
       .tile:disabled { opacity: 0.45; cursor: default; }
-      .name { font-size: 13.5px; font-weight: 500; margin-top: 14px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-      .state { font-size: 12px; color: var(--muted); margin-top: 3px; }
+      .name { font-size: 13px; font-weight: 500; margin-top: 10px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+      .state { font-size: 11.5px; color: var(--muted); margin-top: 2px; }
+      .tile .ico { width: 32px; height: 32px; --mdc-icon-size: 18px; }
+      .tile .ico svg { width: 18px; height: 18px; }
+      /* Compact: one row per light, icon beside the text */
+      :host([compact]) .tile { min-height: 0; flex-direction: row; align-items: center; justify-content: flex-start; gap: 10px; padding: 9px 10px; }
+      :host([compact]) .tile > span:last-child { min-width: 0; }
+      :host([compact]) .name { margin-top: 0; }
       .tile.on {
         background: linear-gradient(160deg, rgba(200, 164, 106, 0.13), rgba(200, 164, 106, 0.03));
         border-color: var(--gold-edge);
@@ -65,6 +104,8 @@ export class LuxLightGroupCard extends LuxBaseCard<LightGroupCardConfig> {
       .tile.on .state { color: var(--gold-hi); }
     `,
   ];
+
+  static getConfigElement = getConfigElement;
 
   static getStubConfig() {
     return { title: "Soggiorno", entities: ["light.example_1", "light.example_2"] };
@@ -80,6 +121,10 @@ export class LuxLightGroupCard extends LuxBaseCard<LightGroupCardConfig> {
 
   protected watchedEntities() {
     return this._entries.map((e) => e.entity);
+  }
+
+  getGridOptions() {
+    return { columns: 12, min_columns: 6 };
   }
 
   getCardSize() {

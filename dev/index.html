@@ -25,6 +25,12 @@
     background: #1C1B18; border: 1px solid rgba(255,240,220,.13); border-radius: 99px;
     padding: 10px 18px; font-size: 13px; opacity: 0; transition: opacity .3s;
   }
+  #editor { max-width: 1180px; margin: 0 auto; padding: 0 24px 80px; }
+  #editor h2 { font-weight: 200; font-size: 28px; margin: 0 0 16px; }
+  #editor select { background: #1C1B18; color: #EEE9E1; border: 1px solid #333; border-radius: 8px; padding: 8px; margin-bottom: 16px; }
+  .editor-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; align-items: start; }
+  #editor-form { background: #141311; border: 1px solid rgba(255,240,220,.07); border-radius: 16px; padding: 16px; }
+  #editor-yaml { margin: 0; background: #141311; border: 1px solid rgba(255,240,220,.07); border-radius: 16px; padding: 16px; font-size: 12px; color: #C8A46A; overflow: auto; }
   @media (max-width: 420px) {
     header { padding: 32px 16px 16px; }
     main { padding: 0 16px 60px; grid-template-columns: 1fr; }
@@ -37,11 +43,21 @@
   <h1>Luxury Cards</h1>
 </header>
 <main id="cards"></main>
+<section id="editor">
+  <h2>Editor grafico</h2>
+  <select id="editor-type"></select>
+  <div class="editor-grid">
+    <div id="editor-form"></div>
+    <pre id="editor-yaml"></pre>
+    <div id="editor-preview"></div>
+  </div>
+</section>
 <div id="toast"></div>
 
 <script type="module">
   import "../src/index.ts";
   import { connect } from "./mock-hass.ts";
+  import "./mock-ha-form.ts";
 
   // Same configs a user would write in YAML
   const layout = [
@@ -69,6 +85,24 @@
       { type: "luxury-light-card", entity: "switch.presa_lampada", room: "Studio", icon: "floor" },
       { type: "luxury-light-card", entity: "light.giardino", room: "Esterno", icon: "spot" },
     ],
+    // Compact variants
+    [
+      { type: "luxury-light-group-card", title: "Cucina · compatta", compact: true, entities: [
+        { entity: "light.lampadario", icon: "chandelier" },
+        { entity: "light.piantana", icon: "floor" },
+        { entity: "light.strip_led", icon: "strip" },
+        { entity: "light.applique", icon: "bulb" },
+      ] },
+      { type: "luxury-dimmer-card", entity: "light.lampada_studio", room: "Studio", compact: true },
+      { type: "luxury-light-card", entity: "light.comodino", icon: "table", compact: true },
+      { type: "luxury-cover-card", entity: "cover.camera", compact: true },
+    ],
+    [
+      { type: "luxury-thermostat-card", entity: "climate.soggiorno", room: "Soggiorno", compact: true },
+      { type: "luxury-energy-card", room: "Casa", compact: true, entities: {
+        home: "sensor.home_power", solar: "sensor.solar_power", battery: "sensor.battery_power", battery_soc: "sensor.battery_soc",
+      } },
+    ],
   ];
 
   const root = document.getElementById("cards");
@@ -91,6 +125,33 @@
   }
 
   connect((hass) => cards.forEach((c) => (c.hass = hass)));
+
+  // Editor playground: pick a card, edit it with its visual editor, see YAML and preview
+  const types = ["luxury-light-group-card", "luxury-light-card", "luxury-dimmer-card",
+    "luxury-thermostat-card", "luxury-cover-card", "luxury-energy-card"];
+  const picker = document.getElementById("editor-type");
+  picker.innerHTML = types.map((t) => `<option>${t}</option>`).join("");
+  let hassNow;
+  connect((h) => { hassNow = h; const p = document.querySelector("#editor-preview > *"); if (p) p.hass = h; });
+  const showEditor = async (tag) => {
+    const cls = customElements.get(tag);
+    const start = layout.flat().find((c) => c.type === tag) ?? { type: tag, ...cls.getStubConfig() };
+    const editor = await cls.getConfigElement();
+    editor.hass = hassNow;
+    const host = document.getElementById("editor-form");
+    host.replaceChildren(editor);
+    const render = (config) => {
+      document.getElementById("editor-yaml").textContent = JSON.stringify(config, null, 2);
+      const card = document.createElement(tag);
+      try { card.setConfig(config); card.hass = hassNow; document.getElementById("editor-preview").replaceChildren(card); }
+      catch (err) { document.getElementById("editor-preview").textContent = err.message; }
+    };
+    editor.setConfig(start);
+    render(start);
+    editor.addEventListener("config-changed", (e) => { editor.setConfig(e.detail.config); render(e.detail.config); });
+  };
+  picker.onchange = () => showEditor(picker.value);
+  showEditor(types[0]);
 
   const toast = document.getElementById("toast");
   window.addEventListener("hass-more-info", (e) => {

@@ -1,6 +1,7 @@
 import { css, html, svg } from "lit";
 import { LuxBaseCard } from "../shared/base-card";
 import { clamp, entityName, fireMoreInfo, isUnavailable, numAttr, numState, startDrag } from "../shared/helpers";
+import { defineEditor } from "../shared/editor";
 import { PendingValue } from "../shared/pending-value";
 import type { LovelaceCardConfig } from "../shared/types";
 
@@ -13,7 +14,31 @@ export interface ThermostatCardConfig extends LovelaceCardConfig {
   min?: number;
   max?: number;
   step?: number;
+  compact?: boolean;
 }
+
+const getConfigElement = defineEditor("luxury-thermostat-card-editor", {
+  schema: [
+    { name: "entity", required: true, selector: { entity: { domain: "climate" } } },
+    { type: "grid", name: "", schema: [
+      { name: "name", selector: { text: {} } },
+      { name: "room", selector: { text: {} } },
+    ] },
+    { name: "humidity_entity", selector: { entity: { domain: "sensor", device_class: "humidity" } } },
+    { type: "grid", name: "", schema: [
+      { name: "min", selector: { number: { min: 5, max: 35, step: 0.5, mode: "box", unit_of_measurement: "°C" } } },
+      { name: "max", selector: { number: { min: 5, max: 35, step: 0.5, mode: "box", unit_of_measurement: "°C" } } },
+      { name: "step", selector: { number: { min: 0.1, max: 1, step: 0.1, mode: "box" } } },
+    ] },
+    { name: "compact", selector: { boolean: {} } },
+  ],
+  labels: {
+    humidity_entity: "Sensore umidità (opzionale)",
+    min: "Minima (opz.)",
+    max: "Massima (opz.)",
+    step: "Passo (opz.)",
+  },
+});
 
 // Dial geometry (SVG viewBox 0 0 260 260): a 270° arc open at the bottom
 const C = 130;
@@ -43,7 +68,8 @@ export class LuxThermostatCard extends LuxBaseCard<ThermostatCardConfig> {
     css`
       .card { --acc: var(--gold); --acc-hi: var(--gold-hi); --acc-lo: var(--gold-lo); }
       .card.off { --acc: #4a4640; --acc-hi: #5e5952; --acc-lo: #3a3732; }
-      .dial { position: relative; width: 100%; max-width: 290px; margin: 0 auto; aspect-ratio: 1; }
+      .dial { position: relative; width: 100%; max-width: 230px; margin: -4px auto 0; aspect-ratio: 1; }
+      :host([compact]) .dial { max-width: 170px; }
       .dial svg { width: 100%; height: 100%; display: block; touch-action: none; cursor: grab; }
       .dial svg:active { cursor: grabbing; }
       .tick { stroke: var(--line-2); stroke-width: 1.2; stroke-linecap: round; transition: stroke 0.3s; }
@@ -58,22 +84,26 @@ export class LuxThermostatCard extends LuxBaseCard<ThermostatCardConfig> {
         pointer-events: none;
       }
       .center .label { font-size: 10.5px; letter-spacing: 0.22em; text-transform: uppercase; color: var(--muted); }
-      .center .num { font-size: 68px; line-height: 1; margin: 6px 0 8px; }
+      .center .num { font-size: 50px; line-height: 1; margin: 4px 0 6px; }
+      :host([compact]) .center .num { font-size: 38px; }
+      :host([compact]) .center .meta { font-size: 10.5px; }
       .center .num sup {
-        font-size: 26px;
+        font-size: 0.4em;
         color: var(--acc);
         font-weight: 300;
         vertical-align: top;
         position: relative;
-        top: 8px;
+        top: 0.12em;
         margin-left: 2px;
       }
-      .center .meta { font-size: 12.5px; color: var(--muted); }
+      .center .meta { font-size: 11.5px; color: var(--muted); }
+      :host([compact]) .center .label,
+      :host([compact]) .hum { display: none; }
       .center .meta b { color: var(--text); font-weight: 400; }
-      .steps { position: absolute; left: 0; right: 0; bottom: 4%; display: flex; justify-content: center; gap: 72px; }
+      .steps { position: absolute; left: 0; right: 0; bottom: 2%; display: flex; justify-content: center; gap: 26%; }
       .round-btn {
-        width: 44px;
-        height: 44px;
+        width: 38px;
+        height: 38px;
         border-radius: 50%;
         border: 1px solid var(--line-2);
         background: transparent;
@@ -84,14 +114,15 @@ export class LuxThermostatCard extends LuxBaseCard<ThermostatCardConfig> {
       }
       .round-btn:hover { border-color: var(--gold-edge); background: var(--gold-tint); }
       .round-btn:active { transform: scale(0.94); }
-      .round-btn svg { width: 18px; height: 18px; }
+      .round-btn svg { width: 16px; height: 16px; }
+      :host([compact]) .round-btn { width: 32px; height: 32px; }
       .status {
         display: flex;
         justify-content: center;
         align-items: center;
         gap: 7px;
-        margin-top: 6px;
-        font-size: 11px;
+        margin-top: 2px;
+        font-size: 10.5px;
         color: var(--muted);
         letter-spacing: 0.14em;
         text-transform: uppercase;
@@ -107,6 +138,8 @@ export class LuxThermostatCard extends LuxBaseCard<ThermostatCardConfig> {
       @keyframes pulse { 50% { opacity: 0.35; } }
     `,
   ];
+
+  static getConfigElement = getConfigElement;
 
   static getStubConfig() {
     return { entity: "climate.example", room: "Soggiorno" };
@@ -282,8 +315,9 @@ export class LuxThermostatCard extends LuxBaseCard<ThermostatCardConfig> {
             <span class="num">${lit ? target.toFixed(1) : "—"}<sup>°</sup></span>
             <span class="meta">
               ${current !== undefined ? html`Attuale <b>${current.toFixed(1)}°</b>` : null}
-              ${current !== undefined && humidity !== undefined ? " · " : null}
-              ${humidity !== undefined ? html`Umidità <b>${Math.round(humidity)}%</b>` : null}
+              ${humidity !== undefined
+                ? html`<span class="hum">${current !== undefined ? " · " : null}Umidità <b>${Math.round(humidity)}%</b></span>`
+                : null}
             </span>
           </div>
           <div class="steps">

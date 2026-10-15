@@ -24,6 +24,22 @@ Custom card minimaliste per Home Assistant: tema scuro, accento oro, tipografia 
 
 ## Configurazione
 
+Tutte le card hanno l'**editor grafico**: *Modifica dashboard → Aggiungi scheda*, cerca "Luxury" e configura con i campi. Il YAML qui sotto resta disponibile per chi preferisce.
+
+### Versione compatta
+Ogni card accetta `compact: true` per occupare meno spazio:
+
+| Card | Cosa cambia |
+|---|---|
+| Gruppo luci | riquadri su una riga (icona accanto al nome) |
+| Luce singola | più bassa, senza sottotitolo, slider sottile |
+| Dimmer | percentuale nell'intestazione, slider più basso |
+| Riscaldamento | quadrante più piccolo |
+| Tapparella | solo percentuale e su/stop/giù |
+| Energia | solo valori istantanei e flusso, senza grafico e totali |
+
+Nelle dashboard a sezioni le card occupano di default metà larghezza (gruppo luci ed energia la larghezza intera); puoi ridimensionarle dal tab *Layout* dell'editor.
+
 ### Gruppo luci
 ```yaml
 type: custom:luxury-light-group-card

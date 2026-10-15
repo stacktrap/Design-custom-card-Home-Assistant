@@ -24,6 +24,17 @@ export abstract class LuxBaseCard<C extends LovelaceCardConfig> extends LitEleme
     return 2;
   }
 
+  /** Default size in sections dashboards: half width, can shrink to a quarter. */
+  getGridOptions(): { columns: number; min_columns: number } {
+    return { columns: 6, min_columns: 3 };
+  }
+
+  // `compact: true` in the config switches every card to its denser layout
+  protected willUpdate(changed: PropertyValues<this>) {
+    super.willUpdate(changed);
+    this.toggleAttribute("compact", !!this._config?.compact);
+  }
+
   // Home Assistant pushes a new `hass` object on every state change in the
   // house: only re-render when one of our entities actually changed.
   protected shouldUpdate(changed: PropertyValues<this>) {

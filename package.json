@@ -1,6 +1,6 @@
 {
   "name": "luxury-cards",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Minimal, luxury custom cards for Home Assistant",
   "type": "module",
   "license": "MIT",

@@ -9,6 +9,7 @@ import {
   setBrightness,
   toggle,
 } from "../shared/helpers";
+import { defineEditor } from "../shared/editor";
 import "../shared/lux-slider";
 import { PendingValue } from "../shared/pending-value";
 import type { LovelaceCardConfig } from "../shared/types";
@@ -17,7 +18,20 @@ export interface DimmerCardConfig extends LovelaceCardConfig {
   entity: string;
   name?: string;
   room?: string;
+  compact?: boolean;
 }
+
+const getConfigElement = defineEditor("luxury-dimmer-card-editor", {
+  schema: [
+    { name: "entity", required: true, selector: { entity: { domain: "light" } } },
+    { type: "grid", name: "", schema: [
+      { name: "name", selector: { text: {} } },
+      { name: "room", selector: { text: {} } },
+    ] },
+    { name: "compact", selector: { boolean: {} } },
+  ],
+  labels: {},
+});
 
 /** Large dimmer: on/off switch, brightness readout and a wide slider. */
 export class LuxDimmerCard extends LuxBaseCard<DimmerCardConfig> {
@@ -37,12 +51,20 @@ export class LuxDimmerCard extends LuxBaseCard<DimmerCardConfig> {
         pointer-events: none;
         transition: opacity 0.5s var(--ease);
       }
-      .value { position: relative; display: flex; align-items: baseline; gap: 4px; margin: 6px 0 2px; }
-      .value .num { font-size: 64px; line-height: 1; }
-      .value .unit { font-size: 22px; }
-      .label { position: relative; color: var(--muted); font-size: 12.5px; margin-bottom: 22px; }
+      .value { position: relative; display: flex; align-items: baseline; gap: 4px; margin: 2px 0 2px; }
+      .value .num { font-size: 48px; line-height: 1; }
+      .value .unit { font-size: 18px; }
+      .label { position: relative; color: var(--muted); font-size: 12px; margin-bottom: 16px; }
+      lux-slider { --slider-height: 48px; --slider-radius: 15px; }
+      .inline { display: none; font-size: 13px; color: var(--gold-hi); font-variant-numeric: tabular-nums; margin-left: auto; }
+      :host([compact]) .value,
+      :host([compact]) .label { display: none; }
+      :host([compact]) .inline { display: block; }
+      :host([compact]) lux-slider { --slider-height: 38px; --slider-radius: 12px; }
     `,
   ];
+
+  static getConfigElement = getConfigElement;
 
   static getStubConfig() {
     return { entity: "light.example", name: "Lampada", room: "Soggiorno" };
@@ -80,6 +102,7 @@ export class LuxDimmerCard extends LuxBaseCard<DimmerCardConfig> {
             ${this._config.room ? html`<p class="card-sub">${this._config.room}</p>` : null}
             <h2 class="card-title">${entityName(entity, this._config.name)}</h2>
           </div>
+          <span class="inline">${lit ? `${pct}%` : "Spenta"}</span>
           <button
             class="switch"
             role="switch"

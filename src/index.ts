@@ -5,7 +5,7 @@ import { LuxLightCard } from "./cards/light-card";
 import { LuxLightGroupCard } from "./cards/light-group-card";
 import { LuxThermostatCard } from "./cards/thermostat-card";
 
-const VERSION = "0.2.0";
+const VERSION = "0.3.0";
 
 const CARDS = [
   {
