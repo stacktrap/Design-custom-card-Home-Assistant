@@ -1,8 +1,11 @@
+import { LuxCoverCard } from "./cards/cover-card";
 import { LuxDimmerCard } from "./cards/dimmer-card";
+import { LuxEnergyCard } from "./cards/energy-card";
 import { LuxLightCard } from "./cards/light-card";
 import { LuxLightGroupCard } from "./cards/light-group-card";
+import { LuxThermostatCard } from "./cards/thermostat-card";
 
-const VERSION = "0.1.0";
+const VERSION = "0.2.0";
 
 const CARDS = [
   {
@@ -22,6 +25,24 @@ const CARDS = [
     cls: LuxDimmerCard,
     name: "Luxury · Dimmer",
     description: "Dimmer grande con slider della luminosità.",
+  },
+  {
+    tag: "luxury-thermostat-card",
+    cls: LuxThermostatCard,
+    name: "Luxury · Riscaldamento",
+    description: "Termostato solo riscaldamento con quadrante circolare.",
+  },
+  {
+    tag: "luxury-cover-card",
+    cls: LuxCoverCard,
+    name: "Luxury · Tapparella",
+    description: "Tapparella con finestra trascinabile, su/stop/giù e aperture rapide.",
+  },
+  {
+    tag: "luxury-energy-card",
+    cls: LuxEnergyCard,
+    name: "Luxury · Energia",
+    description: "Flusso solare, casa e rete, batteria, grafico di oggi e totali.",
   },
 ];
 

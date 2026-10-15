@@ -2,6 +2,18 @@ import type { HassEntity, HomeAssistant } from "./types";
 
 export const clamp = (v: number, min: number, max: number) => Math.min(max, Math.max(min, v));
 
+/** Reads a numeric attribute, or undefined when missing or not a number. */
+export const numAttr = (entity: HassEntity | undefined, key: string) => {
+  const v = entity?.attributes[key];
+  return typeof v === "number" && !Number.isNaN(v) ? v : undefined;
+};
+
+/** Numeric state of a sensor, or undefined when unavailable. */
+export const numState = (entity?: HassEntity) => {
+  const v = entity ? parseFloat(entity.state) : NaN;
+  return Number.isNaN(v) ? undefined : v;
+};
+
 export const isOn = (entity?: HassEntity) => entity?.state === "on";
 
 export const isUnavailable = (entity?: HassEntity) =>

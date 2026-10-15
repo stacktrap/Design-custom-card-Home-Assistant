@@ -45,6 +45,17 @@
 
   // Same configs a user would write in YAML
   const layout = [
+    { type: "luxury-thermostat-card", entity: "climate.soggiorno", room: "Soggiorno" },
+    { type: "luxury-energy-card", room: "Casa", entities: {
+      home: "sensor.home_power",
+      solar: "sensor.solar_power",
+      battery: "sensor.battery_power",
+      battery_soc: "sensor.battery_soc",
+      consumption_today: "sensor.energy_today",
+      production_today: "sensor.solar_energy_today",
+      grid_import_today: "sensor.grid_import_today",
+    } },
+    { type: "luxury-cover-card", entity: "cover.camera", room: "Camera" },
     { type: "luxury-light-group-card", title: "Soggiorno", entities: [
       { entity: "light.lampadario", icon: "chandelier" },
       { entity: "light.piantana", icon: "floor" },

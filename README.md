@@ -7,9 +7,9 @@ Custom card minimaliste per Home Assistant: tema scuro, accento oro, tipografia 
 | Gruppo luci | `custom:luxury-light-group-card` | ✅ |
 | Luce singola | `custom:luxury-light-card` | ✅ |
 | Dimmer | `custom:luxury-dimmer-card` | ✅ |
-| Riscaldamento | — | in arrivo |
-| Tapparella | — | in arrivo |
-| Energia | — | in arrivo |
+| Riscaldamento | `custom:luxury-thermostat-card` | ✅ |
+| Tapparella | `custom:luxury-cover-card` | ✅ |
+| Energia | `custom:luxury-energy-card` | ✅ |
 
 ## Installazione
 
@@ -56,6 +56,48 @@ entity: light.lampada_studio
 room: Studio        # opzionale
 name: Lampada       # opzionale
 ```
+
+### Riscaldamento
+```yaml
+type: custom:luxury-thermostat-card
+entity: climate.soggiorno
+room: Soggiorno                         # opzionale
+name: Riscaldamento                     # opzionale
+humidity_entity: sensor.umidita_soggiorno  # opzionale, se il termostato non ha l'umidità
+min: 16                                 # opzionali: di default letti dall'entità
+max: 28
+step: 0.5
+```
+Trascina l'arco o usa −/+ (la richiesta parte quando smetti di premere). L'interruttore alterna `heat` / `off`; cambiare la temperatura da spento riaccende il riscaldamento.
+
+### Tapparella
+```yaml
+type: custom:luxury-cover-card
+entity: cover.camera
+room: Camera            # opzionale
+presets: [25, 50, 75]   # opzionale, pulsanti "Apertura N%"
+```
+Trascina la finestra in verticale per scegliere la posizione. Se la tapparella non supporta la posizione restano solo su/stop/giù.
+
+### Energia
+```yaml
+type: custom:luxury-energy-card
+title: Energia
+room: Casa
+entities:
+  home: sensor.consumo_casa             # potenza istantanea (W o kW)
+  solar: sensor.produzione_fv           # opzionale
+  grid: sensor.potenza_rete             # opzionale: + prelievo, − immissione
+  battery: sensor.potenza_batteria      # opzionale: + in carica
+  battery_soc: sensor.batteria_percentuale  # opzionale
+  consumption_today: sensor.energia_consumata_oggi  # opzionale (kWh)
+  production_today: sensor.energia_prodotta_oggi    # opzionale (kWh)
+  grid_import_today: sensor.energia_prelevata_oggi  # opzionale, per l'autonomia
+invert_grid: false      # opzionale, se il tuo sensore usa il segno opposto
+invert_battery: false
+history: true           # grafico del consumo di oggi (richiede entities.home)
+```
+Se manca uno tra `home` e `grid`, viene calcolato dagli altri valori. L'autonomia è `1 − prelievo / consumo` della giornata.
 
 ### Icone
 Icone integrate: `bulb`, `chandelier`, `floor`, `table`, `ceiling`, `spot`, `strip`.

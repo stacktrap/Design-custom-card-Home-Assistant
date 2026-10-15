@@ -15,6 +15,7 @@ export interface HassEntity {
 export interface HomeAssistant {
   states: Record<string, HassEntity>;
   callService(domain: string, service: string, data?: Record<string, unknown>): Promise<unknown>;
+  callWS<T>(message: Record<string, unknown>): Promise<T>;
 }
 
 export interface LovelaceCardConfig {

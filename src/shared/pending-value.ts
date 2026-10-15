@@ -10,7 +10,11 @@ export class PendingValue implements ReactiveController {
   private _dragging = false;
   private _timer?: number;
 
-  constructor(private host: ReactiveControllerHost) {
+  /** `tolerance`: how close the reported value must be to count as confirmed. */
+  constructor(
+    private host: ReactiveControllerHost,
+    private tolerance = 1,
+  ) {
     host.addController(this);
   }
 
@@ -35,9 +39,17 @@ export class PendingValue implements ReactiveController {
     this.host.requestUpdate();
   }
 
+  /** Drops the optimistic value and shows the reported one again. */
+  clear() {
+    this._value = null;
+    this._dragging = false;
+    clearTimeout(this._timer);
+    this.host.requestUpdate();
+  }
+
   /** Returns the value to display given the one reported by Home Assistant. */
   resolve(actual: number) {
-    if (this._value !== null && !this._dragging && Math.abs(actual - this._value) <= 1) {
+    if (this._value !== null && !this._dragging && Math.abs(actual - this._value) <= this.tolerance) {
       this._value = null;
       clearTimeout(this._timer);
     }
