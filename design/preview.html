@@ -1,0 +1,791 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Luxury Cards Preview</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@200;300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  /* ── Design tokens ─────────────────────────────────────────── */
+  :root {
+    --page: #0A0908;
+    --card-top: #171614;
+    --card-bottom: #11100F;
+    --surface: #1C1B18;
+    --surface-hi: #24221F;
+    --line: rgba(255, 240, 220, 0.07);
+    --line-2: rgba(255, 240, 220, 0.13);
+
+    --text: #EEE9E1;
+    --muted: #8C857A;
+    --faint: #57524B;
+
+    --gold: #C8A46A;
+    --gold-hi: #E8D3A6;
+    --gold-lo: #8A6C40;
+    --gold-tint: rgba(200, 164, 106, 0.09);
+    --gold-edge: rgba(200, 164, 106, 0.28);
+
+
+    --radius: 28px;
+    --radius-sm: 16px;
+    --ease: cubic-bezier(.22, .8, .24, 1);
+    --font: "Manrope", -apple-system, "Helvetica Neue", sans-serif;
+  }
+
+  * { box-sizing: border-box; }
+  html, body { margin: 0; }
+  body {
+    background:
+      radial-gradient(1200px 600px at 50% -10%, rgba(200,164,106,.07), transparent 60%),
+      var(--page);
+    color: var(--text);
+    font-family: var(--font);
+    -webkit-font-smoothing: antialiased;
+    min-height: 100vh;
+  }
+
+  header.page {
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 56px 24px 32px;
+    display: flex;
+    align-items: end;
+    justify-content: space-between;
+    gap: 24px;
+    flex-wrap: wrap;
+  }
+  .eyebrow {
+    font-size: 11px;
+    letter-spacing: .28em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin: 0 0 12px;
+  }
+  h1 {
+    font-weight: 200;
+    font-size: clamp(30px, 4vw, 44px);
+    letter-spacing: -.01em;
+    margin: 0;
+  }
+  .page-note { color: var(--muted); font-size: 13px; max-width: 340px; line-height: 1.6; margin: 0; }
+
+  main.grid {
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 0 24px 80px;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+    gap: 20px;
+    align-items: start;
+  }
+
+  /* ── Card base ─────────────────────────────────────────────── */
+  .card {
+    position: relative;
+    overflow: hidden;
+    border-radius: var(--radius);
+    padding: 24px;
+    background: linear-gradient(180deg, var(--card-top), var(--card-bottom));
+    border: 1px solid var(--line);
+    box-shadow:
+      0 40px 80px -40px rgba(0,0,0,.9),
+      inset 0 1px 0 rgba(255,255,255,.035);
+    user-select: none;
+    -webkit-user-select: none;
+  }
+  .card-head {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+  .card-title { font-size: 15px; font-weight: 500; margin: 0; }
+  .card-sub {
+    font-size: 10.5px;
+    letter-spacing: .2em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin: 0 0 5px;
+  }
+
+  button { font-family: inherit; color: inherit; }
+
+  /* Switch */
+  .switch {
+    width: 46px; height: 26px;
+    border-radius: 99px;
+    border: 1px solid var(--line-2);
+    background: var(--surface);
+    position: relative;
+    cursor: pointer;
+    padding: 0;
+    flex: none;
+    transition: background .4s var(--ease), border-color .4s var(--ease);
+  }
+  .switch::after {
+    content: "";
+    position: absolute;
+    top: 3px; left: 3px;
+    width: 18px; height: 18px;
+    border-radius: 50%;
+    background: var(--faint);
+    transition: transform .4s var(--ease), background .4s var(--ease);
+  }
+  .switch[aria-checked="true"] {
+    background: linear-gradient(135deg, var(--gold-hi), var(--gold));
+    border-color: transparent;
+  }
+  .switch[aria-checked="true"]::after { transform: translateX(20px); background: #1A1714; }
+
+  /* Chips */
+  .chips { display: flex; gap: 8px; flex-wrap: wrap; }
+  .chip {
+    border: 1px solid var(--line-2);
+    background: transparent;
+    color: var(--muted);
+    font-size: 12px;
+    padding: 8px 14px;
+    border-radius: 99px;
+    cursor: pointer;
+    transition: all .3s var(--ease);
+  }
+  .chip:hover { color: var(--text); border-color: var(--gold-edge); }
+  .chip.active { color: #1A1714; background: var(--gold); border-color: transparent; }
+
+  .round-btn {
+    width: 44px; height: 44px;
+    border-radius: 50%;
+    border: 1px solid var(--line-2);
+    background: transparent;
+    display: grid; place-items: center;
+    cursor: pointer;
+    transition: all .3s var(--ease);
+  }
+  .round-btn:hover { border-color: var(--gold-edge); background: var(--gold-tint); }
+  .round-btn:active { transform: scale(.94); }
+  .round-btn svg { width: 18px; height: 18px; }
+
+  .icon { fill: none; stroke: currentColor; stroke-width: 1.4; stroke-linecap: round; stroke-linejoin: round; }
+
+  .num { font-weight: 200; letter-spacing: -.03em; font-variant-numeric: tabular-nums; }
+  .unit { color: var(--gold); font-weight: 300; }
+
+  /* ── Thermostat ────────────────────────────────────────────── */
+  .thermo { --acc: var(--gold); --acc-hi: var(--gold-hi); --acc-lo: var(--gold-lo); }
+  .thermo[data-on="false"] { --acc: #4A4640; --acc-hi: #5E5952; --acc-lo: #3A3732; }
+  .thermo-dial { position: relative; width: 100%; max-width: 290px; margin: 0 auto; aspect-ratio: 1; }
+  .thermo-dial svg { width: 100%; height: 100%; display: block; touch-action: none; cursor: grab; }
+  .thermo-dial svg:active { cursor: grabbing; }
+  .tick { stroke: var(--line-2); stroke-width: 1.2; stroke-linecap: round; transition: stroke .3s; }
+  .tick.on { stroke: var(--acc); }
+  .thermo-center {
+    position: absolute; inset: 0;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    pointer-events: none;
+  }
+  .thermo-center .label { font-size: 10.5px; letter-spacing: .22em; text-transform: uppercase; color: var(--muted); }
+  .thermo-center .num { font-size: 68px; line-height: 1; margin: 6px 0 8px; }
+  .thermo-center .num sup { font-size: 26px; color: var(--acc); font-weight: 300; vertical-align: top; position: relative; top: 8px; margin-left: 2px; }
+  .thermo-center .meta { font-size: 12.5px; color: var(--muted); }
+  .thermo-center .meta b { color: var(--text); font-weight: 400; }
+  .thermo-steps {
+    position: absolute; left: 0; right: 0; bottom: 4%;
+    display: flex; justify-content: center; gap: 72px;
+  }
+  .thermo-status { display: flex; justify-content: center; margin-top: 6px; }
+  .thermo[data-on="false"] .thermo-status .live::before,
+  .thermo[data-idle="true"] .thermo-status .live::before { background: var(--faint); box-shadow: none; animation: none; }
+
+  /* ── Lights ────────────────────────────────────────────────── */
+  .tiles { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .tile {
+    text-align: left;
+    border: 1px solid var(--line);
+    background: var(--surface);
+    border-radius: var(--radius-sm);
+    padding: 16px;
+    min-height: 116px;
+    display: flex; flex-direction: column; justify-content: space-between;
+    cursor: pointer;
+    transition: background .4s var(--ease), border-color .4s var(--ease), transform .2s var(--ease);
+  }
+  .tile:active { transform: scale(.98); }
+  .ico {
+    width: 38px; height: 38px; border-radius: 50%;
+    display: grid; place-items: center;
+    color: var(--faint);
+    background: rgba(255,255,255,.03);
+    transition: all .4s var(--ease);
+  }
+  .ico svg { width: 20px; height: 20px; }
+  .tile .name { font-size: 13.5px; font-weight: 500; margin-top: 14px; }
+  .tile .state { font-size: 12px; color: var(--muted); margin-top: 3px; }
+  .tile.on { background: linear-gradient(160deg, rgba(200,164,106,.13), rgba(200,164,106,.03)); border-color: var(--gold-edge); }
+  .on .ico { color: #1A1714; background: linear-gradient(135deg, var(--gold-hi), var(--gold)); box-shadow: 0 0 24px rgba(232,211,166,.35); }
+  .tile.on .state { color: var(--gold-hi); }
+
+  /* ── Single light ──────────────────────────────────────────── */
+  .stack { display: grid; gap: 20px; }
+  .single-light { padding: 20px; transition: border-color .4s var(--ease); }
+  .single-light.on { border-color: var(--gold-edge); }
+  .sl-row { display: flex; align-items: center; gap: 14px; }
+  .single-light .ico { width: 46px; height: 46px; border: 0; padding: 0; flex: none; cursor: pointer; }
+  .sl-text { flex: 1; min-width: 0; }
+  .sl-state { font-size: 12px; color: var(--muted); margin-top: 3px; }
+  .single-light.on .sl-state { color: var(--gold-hi); }
+  .sl-track {
+    position: relative;
+    margin-top: 18px;
+    height: 34px;
+    border-radius: 12px;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    overflow: hidden;
+    cursor: ew-resize;
+    touch-action: none;
+  }
+  .sl-fill {
+    position: absolute; inset: 0 auto 0 0;
+    background: linear-gradient(90deg, var(--gold-lo), var(--gold-hi));
+    border-radius: inherit;
+    transition: width .15s linear;
+  }
+
+  /* ── Dimmer ────────────────────────────────────────────────── */
+  .dimmer::before {
+    content: "";
+    position: absolute; inset: -40% -20% auto;
+    height: 90%;
+    background: radial-gradient(closest-side, #F1C58A, transparent);
+    opacity: var(--glow-o, .2);
+    filter: blur(20px);
+    pointer-events: none;
+    transition: opacity .5s var(--ease);
+  }
+  .dimmer-value { position: relative; display: flex; align-items: baseline; gap: 4px; margin: 6px 0 2px; }
+  .dimmer-value .num { font-size: 64px; line-height: 1; }
+  .dimmer-value .unit { font-size: 22px; }
+  .dimmer-label { position: relative; color: var(--muted); font-size: 12.5px; margin-bottom: 22px; }
+  .slider {
+    position: relative;
+    height: 58px;
+    border-radius: 18px;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    overflow: hidden;
+    cursor: ew-resize;
+    touch-action: none;
+  }
+  .slider .fill {
+    position: absolute; inset: 0 auto 0 0;
+    background: linear-gradient(90deg, var(--gold-lo), var(--gold-hi));
+    border-radius: inherit;
+    transition: width .15s linear, opacity .4s;
+  }
+  .slider .fill::after {
+    content: ""; position: absolute; right: 12px; top: 50%;
+    width: 2px; height: 22px; margin-top: -11px;
+    border-radius: 2px; background: rgba(26,23,20,.55);
+  }
+  .slider .marks {
+    position: absolute; inset: 0;
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 0 18px; pointer-events: none;
+  }
+  .slider .marks i { width: 1px; height: 8px; background: var(--line-2); }
+  .dimmer[data-on="false"] .slider .fill { opacity: .18; }
+
+  /* ── Cover ─────────────────────────────────────────────────── */
+  .cover-body { display: grid; grid-template-columns: 112px 1fr; gap: 24px; align-items: center; }
+  .window {
+    position: relative;
+    height: 164px;
+    border-radius: 14px;
+    border: 1px solid var(--line-2);
+    background: linear-gradient(180deg, #2B2620 0%, #1E1B17 60%, #171512 100%);
+    overflow: hidden;
+    cursor: ns-resize;
+    touch-action: none;
+  }
+  .window::before { /* window muntin */
+    content: ""; position: absolute; left: 50%; top: 0; bottom: 0; width: 1px; background: var(--line-2);
+  }
+  .shutter {
+    position: absolute; left: 0; right: 0; top: 0;
+    background: repeating-linear-gradient(180deg, #2E2B27 0 9px, #1C1A17 9px 10.5px);
+    box-shadow: 0 6px 18px rgba(0,0,0,.5);
+    transition: height .12s linear;
+  }
+  .shutter::after {
+    content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 3px;
+    background: linear-gradient(90deg, var(--gold-lo), var(--gold-hi), var(--gold-lo));
+  }
+  .cover-info .num { font-size: 56px; line-height: 1; }
+  .cover-info .unit { font-size: 20px; }
+  .cover-info .state { color: var(--muted); font-size: 12.5px; margin: 6px 0 18px; }
+  .cover-controls { display: flex; gap: 8px; }
+  .cover .chips { margin-top: 20px; }
+
+  /* ── Energy ────────────────────────────────────────────────── */
+  .live { display: inline-flex; align-items: center; gap: 7px; font-size: 11px; color: var(--muted); letter-spacing: .14em; text-transform: uppercase; }
+  .live::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: var(--gold); box-shadow: 0 0 10px var(--gold); animation: pulse 2s infinite; }
+  @keyframes pulse { 50% { opacity: .35; } }
+  .energy-hero { display: flex; align-items: baseline; gap: 6px; }
+  .energy-hero .num { font-size: 56px; line-height: 1; }
+  .energy-hero .unit { font-size: 20px; }
+  .energy-caption { color: var(--muted); font-size: 12.5px; margin: 6px 0 14px; }
+  .flow { width: 100%; display: block; }
+  .flow .node { fill: var(--surface); stroke: var(--line-2); stroke-width: 1; }
+  .flow .node.hot { stroke: var(--gold-edge); }
+  .flow .glyph { fill: none; stroke: var(--gold-hi); stroke-width: 1.3; stroke-linecap: round; stroke-linejoin: round; }
+  .flow .rail { stroke: var(--line); stroke-width: 1.5; }
+  .flow .stream { stroke: var(--gold); stroke-width: 1.5; stroke-dasharray: 1.5 7; stroke-linecap: round; animation: flow 1.1s linear infinite; }
+  .flow .stream.rev { animation-direction: reverse; }
+  @keyframes flow { to { stroke-dashoffset: -17; } }
+  .flow text { fill: var(--muted); font-size: 8px; letter-spacing: .14em; text-transform: uppercase; font-family: var(--font); }
+  .flow text.v { fill: var(--text); font-size: 11.5px; letter-spacing: 0; text-transform: none; }
+
+  .battery-row { display: flex; align-items: center; gap: 14px; margin: 14px 0 20px; font-size: 12.5px; color: var(--muted); }
+  .battery-row b { color: var(--text); font-weight: 500; }
+  .bar { flex: 1; height: 4px; border-radius: 4px; background: var(--surface-hi); overflow: hidden; }
+  .bar span { display: block; height: 100%; border-radius: inherit; background: linear-gradient(90deg, var(--gold-lo), var(--gold-hi)); transition: width .8s var(--ease); }
+
+  .spark { width: 100%; height: 72px; display: block; }
+  .spark-axis { display: flex; justify-content: space-between; font-size: 10px; color: var(--faint); margin-top: 6px; letter-spacing: .08em; }
+  .stats { display: grid; grid-template-columns: repeat(3, 1fr); margin-top: 20px; border-top: 1px solid var(--line); padding-top: 18px; }
+  .stat + .stat { border-left: 1px solid var(--line); padding-left: 14px; }
+  .stat .k { font-size: 10px; letter-spacing: .18em; text-transform: uppercase; color: var(--muted); }
+  .stat .v { font-size: 20px; font-weight: 300; margin-top: 6px; }
+  .stat .v small { font-size: 11px; color: var(--gold); margin-left: 2px; }
+
+  footer.page { max-width: 1180px; margin: 0 auto; padding: 0 24px 48px; color: var(--faint); font-size: 12px; }
+
+  @media (max-width: 420px) {
+    header.page { padding: 40px 16px 24px; }
+    main.grid { padding: 0 16px 60px; grid-template-columns: 1fr; }
+    .card { padding: 20px; }
+    .cover-body { grid-template-columns: 96px 1fr; gap: 18px; }
+  }
+</style>
+</head>
+<body>
+
+<header class="page">
+  <div>
+    <p class="eyebrow">Home Assistant · Custom Cards</p>
+    <h1>Luxury Cards — anteprima di design</h1>
+  </div>
+  <p class="page-note">Le card sono interattive: puoi trascinare il termostato, i dimmer e la tapparella, e toccare luci e interruttori. I dati sono simulati.</p>
+</header>
+
+<main class="grid">
+
+  <!-- Thermostat -->
+  <section class="card thermo" id="thermo" data-on="true">
+    <div class="card-head">
+      <div><p class="card-sub">Soggiorno</p><h2 class="card-title">Riscaldamento</h2></div>
+      <button class="switch" role="switch" aria-checked="true" id="thermo-switch" aria-label="Accendi o spegni il riscaldamento"></button>
+    </div>
+    <div class="thermo-dial">
+      <svg viewBox="0 0 260 260" id="thermo-svg" aria-label="Temperatura impostata"></svg>
+      <div class="thermo-center">
+        <span class="label">Impostata</span>
+        <span class="num" id="thermo-target">21.5<sup>°</sup></span>
+        <span class="meta">Attuale <b id="thermo-current">20.4°</b> · Umidità <b>48%</b></span>
+      </div>
+      <div class="thermo-steps">
+        <button class="round-btn" id="thermo-minus" aria-label="Diminuisci"><svg class="icon" viewBox="0 0 24 24"><path d="M6 12h12"/></svg></button>
+        <button class="round-btn" id="thermo-plus" aria-label="Aumenta"><svg class="icon" viewBox="0 0 24 24"><path d="M6 12h12M12 6v12"/></svg></button>
+      </div>
+    </div>
+    <div class="thermo-status"><span class="live" id="thermo-action">Riscaldamento in corso</span></div>
+  </section>
+
+  <!-- Dimmer -->
+  <section class="card dimmer" id="dimmer" data-on="true">
+    <div class="card-head">
+      <div><p class="card-sub">Studio</p><h2 class="card-title">Lampada da tavolo</h2></div>
+      <button class="switch" role="switch" aria-checked="true" id="dimmer-switch" aria-label="Accendi o spegni"></button>
+    </div>
+    <div class="dimmer-value"><span class="num" id="dimmer-num">65</span><span class="unit">%</span></div>
+    <div class="dimmer-label" id="dimmer-label">Luminosità</div>
+    <div class="slider" id="dimmer-slider" role="slider" aria-valuemin="0" aria-valuemax="100" aria-valuenow="65" aria-label="Luminosità">
+      <div class="marks"><i></i><i></i><i></i><i></i><i></i></div>
+      <div class="fill" id="dimmer-fill" style="width:65%"></div>
+    </div>
+  </section>
+
+  <!-- Lights -->
+  <section class="card" id="lights">
+    <div class="card-head">
+      <div><p class="card-sub">Soggiorno</p><h2 class="card-title" id="lights-count">3 di 4 accese</h2></div>
+      <button class="switch" role="switch" aria-checked="true" id="lights-master" aria-label="Tutte le luci"></button>
+    </div>
+    <div class="tiles" id="lights-tiles"></div>
+  </section>
+
+  <!-- Single light: same card, two configurations -->
+  <div class="stack">
+    <section class="card single-light" data-icon="ceiling" data-dimmable="false" data-on="true">
+      <div class="sl-row">
+        <button class="ico" aria-label="Accendi o spegni"></button>
+        <div class="sl-text"><p class="card-sub">Ingresso</p><h2 class="card-title">Plafoniera</h2><div class="sl-state"></div></div>
+        <button class="switch" role="switch" aria-label="Accendi o spegni"></button>
+      </div>
+    </section>
+    <section class="card single-light" data-icon="sconce" data-dimmable="true" data-on="true" data-b="40">
+      <div class="sl-row">
+        <button class="ico" aria-label="Accendi o spegni"></button>
+        <div class="sl-text"><p class="card-sub">Camera</p><h2 class="card-title">Comodino</h2><div class="sl-state"></div></div>
+        <button class="switch" role="switch" aria-label="Accendi o spegni"></button>
+      </div>
+      <div class="sl-track" role="slider" aria-label="Luminosità"><div class="sl-fill"></div></div>
+    </section>
+  </div>
+
+  <!-- Cover -->
+  <section class="card cover" id="cover">
+    <div class="card-head">
+      <div><p class="card-sub">Camera</p><h2 class="card-title">Tapparella</h2></div>
+      <span class="live" id="cover-moving" style="visibility:hidden">In movimento</span>
+    </div>
+    <div class="cover-body">
+      <div class="window" id="cover-window" role="slider" aria-label="Posizione tapparella" aria-valuemin="0" aria-valuemax="100">
+        <div class="shutter" id="cover-shutter"></div>
+      </div>
+      <div class="cover-info">
+        <div><span class="num" id="cover-num">65</span><span class="unit">%</span></div>
+        <div class="state" id="cover-state">Parzialmente aperta</div>
+        <div class="cover-controls">
+          <button class="round-btn" id="cover-up" aria-label="Apri"><svg class="icon" viewBox="0 0 24 24"><path d="M6 15l6-6 6 6"/></svg></button>
+          <button class="round-btn" id="cover-stop" aria-label="Stop"><svg class="icon" viewBox="0 0 24 24"><rect x="8" y="8" width="8" height="8" rx="1.5"/></svg></button>
+          <button class="round-btn" id="cover-down" aria-label="Chiudi"><svg class="icon" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></button>
+        </div>
+      </div>
+    </div>
+    <div class="chips" id="cover-presets">
+      <button class="chip" data-pos="25">Apertura 25%</button>
+      <button class="chip" data-pos="50">Apertura 50%</button>
+      <button class="chip" data-pos="75">Apertura 75%</button>
+    </div>
+  </section>
+
+  <!-- Energy -->
+  <section class="card energy" id="energy">
+    <div class="card-head">
+      <div><p class="card-sub">Casa</p><h2 class="card-title">Energia</h2></div>
+      <span class="live">Live</span>
+    </div>
+    <div class="energy-hero"><span class="num" id="en-home">1.84</span><span class="unit">kW</span></div>
+    <div class="energy-caption" id="en-caption">Consumo attuale · in immissione 0.76 kW</div>
+
+    <svg class="flow" viewBox="0 0 300 120" id="en-flow">
+      <line class="rail" x1="62" y1="44" x2="126" y2="44"/>
+      <line class="rail" x1="174" y1="44" x2="238" y2="44"/>
+      <line class="stream" id="en-s1" x1="62" y1="44" x2="126" y2="44"/>
+      <line class="stream" id="en-s2" x1="174" y1="44" x2="238" y2="44"/>
+
+      <circle class="node hot" cx="40" cy="44" r="22"/>
+      <g class="glyph" transform="translate(28 32)"><circle cx="12" cy="12" r="4"/><path d="M12 3v2M12 19v2M3 12h2M19 12h2M5.6 5.6l1.4 1.4M17 17l1.4 1.4M5.6 18.4L7 17M17 7l1.4-1.4"/></g>
+      <circle class="node hot" cx="150" cy="44" r="24"/>
+      <g class="glyph" transform="translate(138 32)"><path d="M4 11l8-7 8 7M6 9.5V20h12V9.5M10 20v-5h4v5"/></g>
+      <circle class="node" cx="260" cy="44" r="22"/>
+      <g class="glyph" transform="translate(248 32)"><path d="M12 3l-5 18M12 3l5 18M8.5 15h7M9.6 11h4.8M5 7h14M12 3v4"/></g>
+
+      <text x="40" y="92" text-anchor="middle">Solare</text>
+      <text x="40" y="110" text-anchor="middle" class="v" id="en-solar">3.20 kW</text>
+      <text x="150" y="92" text-anchor="middle">Casa</text>
+      <text x="150" y="110" text-anchor="middle" class="v" id="en-home2">1.84 kW</text>
+      <text x="260" y="92" text-anchor="middle">Rete</text>
+      <text x="260" y="110" text-anchor="middle" class="v" id="en-grid">−0.76 kW</text>
+    </svg>
+
+    <div class="battery-row">
+      <span>Batteria <b id="en-soc">82%</b></span>
+      <div class="bar"><span id="en-bar" style="width:82%"></span></div>
+      <span id="en-batt">+0.60 kW</span>
+    </div>
+
+    <svg class="spark" viewBox="0 0 300 72" preserveAspectRatio="none" id="en-spark">
+      <defs>
+        <linearGradient id="sparkFill" x1="0" x2="0" y1="0" y2="1">
+          <stop offset="0" stop-color="#C8A46A" stop-opacity=".32"/>
+          <stop offset="1" stop-color="#C8A46A" stop-opacity="0"/>
+        </linearGradient>
+      </defs>
+    </svg>
+    <div class="spark-axis"><span>00</span><span>06</span><span>12</span><span>18</span><span>24</span></div>
+
+    <div class="stats">
+      <div class="stat"><div class="k">Consumo</div><div class="v">12.4<small>kWh</small></div></div>
+      <div class="stat"><div class="k">Prodotta</div><div class="v">18.9<small>kWh</small></div></div>
+      <div class="stat"><div class="k">Autonomia</div><div class="v">86<small>%</small></div></div>
+    </div>
+  </section>
+
+</main>
+
+<footer class="page">Mockup statico · fase 1 · i componenti definitivi saranno in Lit + TypeScript</footer>
+
+<script>
+const $ = (id) => document.getElementById(id);
+const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
+const NS = "http://www.w3.org/2000/svg";
+const el = (tag, attrs = {}) => {
+  const n = document.createElementNS(NS, tag);
+  for (const k in attrs) n.setAttribute(k, attrs[k]);
+  return n;
+};
+const polar = (cx, cy, r, deg) => {
+  const t = deg * Math.PI / 180;
+  return [cx + r * Math.cos(t), cy + r * Math.sin(t)];
+};
+const arcPath = (cx, cy, r, a0, a1) => {
+  const [x0, y0] = polar(cx, cy, r, a0);
+  const [x1, y1] = polar(cx, cy, r, a1);
+  return `M${x0} ${y0} A${r} ${r} 0 ${a1 - a0 > 180 ? 1 : 0} 1 ${x1} ${y1}`;
+};
+// Drag helper: calls fn(event) on pointerdown and pointermove while pressed
+const draggable = (node, fn) => {
+  node.addEventListener("pointerdown", (e) => {
+    node.setPointerCapture(e.pointerId);
+    fn(e);
+    const move = (ev) => fn(ev);
+    const up = () => { node.removeEventListener("pointermove", move); node.removeEventListener("pointerup", up); };
+    node.addEventListener("pointermove", move);
+    node.addEventListener("pointerup", up);
+  });
+};
+
+/* ── Thermostat ─────────────────────────────────────────────── */
+(() => {
+  const MIN = 16, MAX = 28, START = 135, SWEEP = 270, C = 130, R = 100, TICKS = 60;
+  const state = { target: 21.5, current: 20.4, on: true };
+  const svg = $("thermo-svg");
+
+  svg.innerHTML = `
+    <defs>
+      <linearGradient id="thermoGrad" x1="0" x2="1" y1="1" y2="0">
+        <stop offset="0" style="stop-color:var(--acc-lo)"/>
+        <stop offset="1" style="stop-color:var(--acc-hi)"/>
+      </linearGradient>
+      <filter id="thermoGlow" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="6"/></filter>
+    </defs>`;
+  const ticks = [];
+  for (let i = 0; i <= TICKS; i++) {
+    const a = START + SWEEP * i / TICKS;
+    const major = i % 10 === 0;
+    const [x0, y0] = polar(C, C, 116, a);
+    const [x1, y1] = polar(C, C, major ? 124 : 120, a);
+    const t = el("line", { x1: x0, y1: y0, x2: x1, y2: y1, class: "tick" });
+    svg.appendChild(t);
+    ticks.push(t);
+  }
+  svg.appendChild(el("path", { d: arcPath(C, C, R, START, START + SWEEP), stroke: "rgba(255,240,220,.08)", "stroke-width": 2, fill: "none", "stroke-linecap": "round" }));
+  const glow = el("path", { stroke: "url(#thermoGrad)", "stroke-width": 6, fill: "none", "stroke-linecap": "round", filter: "url(#thermoGlow)", opacity: .55 });
+  const value = el("path", { stroke: "url(#thermoGrad)", "stroke-width": 3.5, fill: "none", "stroke-linecap": "round" });
+  const knobHalo = el("circle", { r: 16, fill: "var(--acc)", opacity: .14 });
+  const knob = el("circle", { r: 8, fill: "#1A1815", stroke: "var(--acc-hi)", "stroke-width": 2 });
+  svg.append(glow, value, knobHalo, knob);
+
+  const render = () => {
+    const f = (state.target - MIN) / (MAX - MIN);
+    const end = START + Math.max(SWEEP * f, 0.01);
+    value.setAttribute("d", arcPath(C, C, R, START, end));
+    glow.setAttribute("d", arcPath(C, C, R, START, end));
+    const [kx, ky] = polar(C, C, R, end);
+    knob.setAttribute("cx", kx); knob.setAttribute("cy", ky);
+    knobHalo.setAttribute("cx", kx); knobHalo.setAttribute("cy", ky);
+    ticks.forEach((t, i) => t.classList.toggle("on", i / TICKS <= f && state.on));
+    $("thermo-target").innerHTML = (state.on ? state.target.toFixed(1) : "—") + "<sup>°</sup>";
+    const heating = state.on && state.current < state.target;
+    const card = $("thermo");
+    card.dataset.on = state.on;
+    card.dataset.idle = state.on && !heating;
+    $("thermo-switch").setAttribute("aria-checked", state.on);
+    $("thermo-action").textContent = !state.on ? "Spento" : heating ? "Riscaldamento in corso" : "Temperatura raggiunta";
+  };
+  const setTarget = (v) => { state.target = clamp(Math.round(v * 2) / 2, MIN, MAX); render(); };
+
+  draggable(svg, (e) => {
+    const r = svg.getBoundingClientRect();
+    const x = (e.clientX - r.left) / r.width * 260 - C;
+    const y = (e.clientY - r.top) / r.height * 260 - C;
+    let rel = (Math.atan2(y, x) * 180 / Math.PI - START + 720) % 360;
+    if (rel > SWEEP) rel = rel > SWEEP + (360 - SWEEP) / 2 ? 0 : SWEEP;
+    state.on = true;
+    setTarget(MIN + (MAX - MIN) * rel / SWEEP);
+  });
+  $("thermo-minus").onclick = () => { state.on = true; setTarget(state.target - 0.5); };
+  $("thermo-plus").onclick = () => { state.on = true; setTarget(state.target + 0.5); };
+  $("thermo-switch").onclick = () => { state.on = !state.on; render(); };
+  render();
+})();
+
+/* ── Dimmer ─────────────────────────────────────────────────── */
+(() => {
+  const state = { on: true, b: 65 };
+  const card = $("dimmer");
+  const render = () => {
+    card.dataset.on = state.on;
+    card.style.setProperty("--glow-o", state.on ? (0.08 + state.b / 100 * 0.32).toFixed(2) : 0);
+    $("dimmer-switch").setAttribute("aria-checked", state.on);
+    $("dimmer-num").textContent = state.on ? state.b : "0";
+    $("dimmer-label").textContent = state.on ? "Luminosità" : "Spenta";
+    $("dimmer-fill").style.width = Math.max(state.b, 6) + "%";
+    $("dimmer-slider").setAttribute("aria-valuenow", state.b);
+  };
+  const slider = $("dimmer-slider");
+  draggable(slider, (e) => {
+    const r = slider.getBoundingClientRect();
+    state.b = clamp(Math.round((e.clientX - r.left) / r.width * 100), 1, 100);
+    state.on = true;
+    render();
+  });
+  $("dimmer-switch").onclick = () => { state.on = !state.on; render(); };
+  render();
+})();
+
+const ICONS = {
+  chandelier: '<path d="M12 3v4M7 11a5 4 0 0 1 10 0M5 11h14l-2 4H7zM9 15v2M15 15v2M12 15v4"/>',
+  floor: '<path d="M8 3h8l2 6H6zM12 9v11M8 21h8"/>',
+  strip: '<rect x="3" y="10" width="18" height="4" rx="2"/><path d="M7 12h.01M12 12h.01M17 12h.01"/>',
+  sconce: '<path d="M9 18h6M10 21h4M12 3a6 6 0 0 0-4 10.5c.7.7 1 1.5 1 2.5h6c0-1 .3-1.8 1-2.5A6 6 0 0 0 12 3z"/>',
+  ceiling: '<path d="M4 7h16M8 7l-2 6h12l-2-6M10 16.5l-.5 1.5M14 16.5l.5 1.5M12 17v2"/>',
+};
+
+/* ── Single light (configurable) ────────────────────────────── */
+// Each .single-light card reads its config from data attributes:
+// data-icon, data-dimmable ("true"/"false"), data-on, data-b
+document.querySelectorAll(".single-light").forEach((card) => {
+  const state = { on: card.dataset.on === "true", b: +card.dataset.b || 100 };
+  const dimmable = card.dataset.dimmable === "true";
+  card.querySelector(".ico").innerHTML = `<svg class="icon" viewBox="0 0 24 24">${ICONS[card.dataset.icon]}</svg>`;
+  const sw = card.querySelector(".switch");
+  const stateEl = card.querySelector(".sl-state");
+  const fill = card.querySelector(".sl-fill");
+  const render = () => {
+    card.classList.toggle("on", state.on);
+    sw.setAttribute("aria-checked", state.on);
+    stateEl.textContent = !state.on ? "Spenta" : dimmable ? `Accesa · ${state.b}%` : "Accesa";
+    if (fill) fill.style.width = (state.on ? state.b : 0) + "%";
+  };
+  sw.onclick = () => { state.on = !state.on; render(); };
+  card.querySelector(".ico").onclick = sw.onclick;
+  const track = card.querySelector(".sl-track");
+  if (track) draggable(track, (e) => {
+    const r = track.getBoundingClientRect();
+    state.b = clamp(Math.round((e.clientX - r.left) / r.width * 100), 1, 100);
+    state.on = true;
+    render();
+  });
+  render();
+});
+
+/* ── Lights ─────────────────────────────────────────────────── */
+(() => {
+  const lights = [
+    { name: "Lampadario", icon: "chandelier", on: true, b: 80 },
+    { name: "Piantana", icon: "floor", on: true, b: 45 },
+    { name: "Strip LED", icon: "strip", on: false, b: 100 },
+    { name: "Applique", icon: "sconce", on: true, b: 100 },
+  ];
+  const wrap = $("lights-tiles");
+  const render = () => {
+    wrap.innerHTML = "";
+    lights.forEach((l, i) => {
+      const b = document.createElement("button");
+      b.className = "tile" + (l.on ? " on" : "");
+      b.innerHTML = `<span class="ico"><svg class="icon" viewBox="0 0 24 24">${ICONS[l.icon]}</svg></span>
+        <span><div class="name">${l.name}</div><div class="state">${l.on ? `Accesa · ${l.b}%` : "Spenta"}</div></span>`;
+      b.onclick = () => { l.on = !l.on; render(); };
+      wrap.appendChild(b);
+    });
+    const n = lights.filter((l) => l.on).length;
+    $("lights-count").textContent = n ? `${n} di ${lights.length} accese` : "Tutte spente";
+    $("lights-master").setAttribute("aria-checked", n > 0);
+  };
+  $("lights-master").onclick = () => { const any = lights.some((l) => l.on); lights.forEach((l) => (l.on = !any)); render(); };
+  render();
+})();
+
+/* ── Cover ──────────────────────────────────────────────────── */
+(() => {
+  const state = { pos: 65 };
+  let timer = null;
+  const render = () => {
+    $("cover-num").textContent = state.pos;
+    $("cover-shutter").style.height = (100 - state.pos) + "%";
+    $("cover-state").textContent = state.pos === 0 ? "Chiusa" : state.pos === 100 ? "Aperta" : "Parzialmente aperta";
+    $("cover-window").setAttribute("aria-valuenow", state.pos);
+    $("cover-moving").style.visibility = timer ? "visible" : "hidden";
+    document.querySelectorAll("#cover-presets .chip").forEach((c) => c.classList.toggle("active", +c.dataset.pos === state.pos));
+  };
+  const stop = () => { clearInterval(timer); timer = null; render(); };
+  const moveTo = (target) => {
+    stop();
+    if (target === state.pos) return;
+    timer = setInterval(() => {
+      state.pos += Math.sign(target - state.pos);
+      if (state.pos === target) stop(); else render();
+    }, 45);
+    render();
+  };
+  const win = $("cover-window");
+  draggable(win, (e) => {
+    stop();
+    const r = win.getBoundingClientRect();
+    state.pos = clamp(Math.round(100 - (e.clientY - r.top) / r.height * 100), 0, 100);
+    render();
+  });
+  $("cover-up").onclick = () => moveTo(100);
+  $("cover-down").onclick = () => moveTo(0);
+  $("cover-stop").onclick = stop;
+  $("cover-presets").onclick = (e) => { const p = e.target.dataset.pos; if (p) moveTo(+p); };
+  render();
+})();
+
+/* ── Energy ─────────────────────────────────────────────────── */
+(() => {
+  const s = { solar: 3.2, home: 1.84, batt: 0.6, soc: 82 };
+  const render = () => {
+    const grid = s.home + s.batt - s.solar; // >0 import, <0 export
+    $("en-home").textContent = s.home.toFixed(2);
+    $("en-home2").textContent = s.home.toFixed(2) + " kW";
+    $("en-solar").textContent = s.solar.toFixed(2) + " kW";
+    $("en-grid").textContent = (grid < 0 ? "−" : "+") + Math.abs(grid).toFixed(2) + " kW";
+    $("en-caption").textContent = `Consumo attuale · ${grid < 0 ? "in immissione" : "dalla rete"} ${Math.abs(grid).toFixed(2)} kW`;
+    $("en-soc").textContent = Math.round(s.soc) + "%";
+    $("en-bar").style.width = s.soc + "%";
+    $("en-batt").textContent = (s.batt >= 0 ? "+" : "−") + Math.abs(s.batt).toFixed(2) + " kW";
+    $("en-s2").classList.toggle("rev", grid > 0); // flow from grid to home when importing
+  };
+  setInterval(() => {
+    s.solar = clamp(s.solar + (Math.random() - 0.5) * 0.3, 2.4, 3.8);
+    s.home = clamp(s.home + (Math.random() - 0.5) * 0.25, 1.2, 2.6);
+    s.soc = clamp(s.soc + 0.05, 0, 100);
+    render();
+  }, 2000);
+  render();
+
+  // Sparkline: a typical day profile with morning and evening peaks
+  const pts = Array.from({ length: 49 }, (_, i) => {
+    const h = i / 2;
+    const v = 0.35 + 0.9 * Math.exp(-((h - 8) ** 2) / 3) + 1.4 * Math.exp(-((h - 20) ** 2) / 5) + 0.25 * Math.sin(i * 1.7) * 0.4;
+    return [i / 48 * 300, 66 - v / 2.2 * 58];
+  });
+  const line = pts.map((p, i) => (i ? "L" : "M") + p[0].toFixed(1) + " " + p[1].toFixed(1)).join(" ");
+  const spark = $("en-spark");
+  spark.appendChild(el("path", { d: `${line} L300 72 L0 72 Z`, fill: "url(#sparkFill)" }));
+  spark.appendChild(el("path", { d: line, fill: "none", stroke: "#C8A46A", "stroke-width": 1.4, "vector-effect": "non-scaling-stroke" }));
+  const nowX = 300 * 0.58; // "now" marker
+  spark.appendChild(el("line", { x1: nowX, x2: nowX, y1: 0, y2: 72, stroke: "rgba(255,240,220,.15)", "stroke-dasharray": "2 3", "vector-effect": "non-scaling-stroke" }));
+})();
+</script>
+</body>
+</html>

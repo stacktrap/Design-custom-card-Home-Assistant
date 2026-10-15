@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Luxury Cards Dev</title>
+<style>
+  body {
+    margin: 0;
+    min-height: 100vh;
+    background: radial-gradient(1200px 600px at 50% -10%, rgba(200,164,106,.07), transparent 60%), #0A0908;
+    color: #EEE9E1;
+    font-family: "Manrope", -apple-system, sans-serif;
+  }
+  header { max-width: 1180px; margin: 0 auto; padding: 48px 24px 24px; }
+  header p { margin: 0 0 10px; font-size: 11px; letter-spacing: .28em; text-transform: uppercase; color: #C8A46A; }
+  h1 { margin: 0; font-weight: 200; font-size: 36px; }
+  main {
+    max-width: 1180px; margin: 0 auto; padding: 0 24px 80px;
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 20px; align-items: start;
+  }
+  .stack { display: grid; gap: 20px; }
+  #toast {
+    position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%);
+    background: #1C1B18; border: 1px solid rgba(255,240,220,.13); border-radius: 99px;
+    padding: 10px 18px; font-size: 13px; opacity: 0; transition: opacity .3s;
+  }
+  @media (max-width: 420px) {
+    header { padding: 32px 16px 16px; }
+    main { padding: 0 16px 60px; grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+<header>
+  <p>Ambiente di sviluppo · hass simulato</p>
+  <h1>Luxury Cards</h1>
+</header>
+<main id="cards"></main>
+<div id="toast"></div>
+
+<script type="module">
+  import "../src/index.ts";
+  import { connect } from "./mock-hass.ts";
+
+  // Same configs a user would write in YAML
+  const layout = [
+    { type: "luxury-light-group-card", title: "Soggiorno", entities: [
+      { entity: "light.lampadario", icon: "chandelier" },
+      { entity: "light.piantana", icon: "floor" },
+      { entity: "light.strip_led", icon: "strip" },
+      { entity: "light.applique", icon: "bulb" },
+    ] },
+    { type: "luxury-dimmer-card", entity: "light.lampada_studio", room: "Studio" },
+    [
+      { type: "luxury-light-card", entity: "light.plafoniera", room: "Ingresso", icon: "ceiling" },
+      { type: "luxury-light-card", entity: "light.comodino", room: "Camera", icon: "table" },
+      { type: "luxury-light-card", entity: "switch.presa_lampada", room: "Studio", icon: "floor" },
+      { type: "luxury-light-card", entity: "light.giardino", room: "Esterno", icon: "spot" },
+    ],
+  ];
+
+  const root = document.getElementById("cards");
+  const cards = [];
+  const make = (config) => {
+    const el = document.createElement(config.type);
+    el.setConfig(config);
+    cards.push(el);
+    return el;
+  };
+  for (const item of layout) {
+    if (Array.isArray(item)) {
+      const stack = document.createElement("div");
+      stack.className = "stack";
+      item.forEach((c) => stack.appendChild(make(c)));
+      root.appendChild(stack);
+    } else {
+      root.appendChild(make(item));
+    }
+  }
+
+  connect((hass) => cards.forEach((c) => (c.hass = hass)));
+
+  const toast = document.getElementById("toast");
+  window.addEventListener("hass-more-info", (e) => {
+    toast.textContent = `more-info: ${e.detail.entityId}`;
+    toast.style.opacity = 1;
+    setTimeout(() => (toast.style.opacity = 0), 1500);
+  });
+</script>
+</body>
+</html>
