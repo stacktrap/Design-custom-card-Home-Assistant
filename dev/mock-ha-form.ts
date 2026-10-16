@@ -52,10 +52,11 @@ class MockHaForm extends HTMLElement {
     } else {
       input.type = sel.number ? "number" : "text";
       const v = data[f.name];
-      input.value = Array.isArray(v) ? v.join(",") : (v ?? "");
+      input.value = sel.ui_action && v ? JSON.stringify(v) : Array.isArray(v) ? v.join(",") : (v ?? "");
       input.onchange = () => {
         let value: any = input.value || undefined;
         if (sel.number && value !== undefined) value = Number(value);
+        if (sel.ui_action && value !== undefined) value = JSON.parse(value);
         if (sel.entity?.multiple && value !== undefined) value = String(value).split(",").map((s) => s.trim());
         set({ ...data, [f.name]: value });
       };

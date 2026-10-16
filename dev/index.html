@@ -61,6 +61,15 @@
 
   // Same configs a user would write in YAML
   const layout = [
+    [
+      { type: "luxury-thermostat-mini-card", entity: "climate.soggiorno", room: "Soggiorno" },
+      { type: "luxury-button-card", name: "Apri tutto", room: "Tapparelle", icon: "blinds_open",
+        tap_action: { action: "perform-action", perform_action: "cover.open_cover", target: { entity_id: ["cover.camera"] } } },
+      { type: "luxury-button-card", name: "Spegni tutte le luci", icon: "power", secondary: "Tutta la casa",
+        tap_action: { action: "perform-action", perform_action: "light.turn_off", target: { entity_id: ["light.lampadario", "light.piantana", "light.strip_led", "light.comodino", "light.lampada_studio"] }, confirmation: { text: "Spegnere tutte le luci?" } } },
+      { type: "luxury-button-card", name: "Chiudi", icon: "blinds_closed", layout: "tile",
+        tap_action: { action: "perform-action", perform_action: "cover.close_cover", target: { entity_id: "cover.camera" } } },
+    ],
     { type: "luxury-thermostat-card", entity: "climate.soggiorno", room: "Soggiorno" },
     { type: "luxury-energy-card", room: "Casa", entities: {
       home: "sensor.home_power",
@@ -127,7 +136,7 @@
   connect((hass) => cards.forEach((c) => (c.hass = hass)));
 
   // Editor playground: pick a card, edit it with its visual editor, see YAML and preview
-  const types = ["luxury-light-group-card", "luxury-light-card", "luxury-dimmer-card",
+  const types = ["luxury-button-card", "luxury-thermostat-mini-card", "luxury-light-group-card", "luxury-light-card", "luxury-dimmer-card",
     "luxury-thermostat-card", "luxury-cover-card", "luxury-energy-card"];
   const picker = document.getElementById("editor-type");
   picker.innerHTML = types.map((t) => `<option>${t}</option>`).join("");
@@ -152,6 +161,16 @@
   };
   picker.onchange = () => showEditor(picker.value);
   showEditor(types[0]);
+
+  // What Home Assistant does with `hass-action`: run the configured action
+  window.addEventListener("hass-action", (e) => {
+    const { config, action } = e.detail;
+    const a = config[`${action}_action`];
+    if (!a || a.action !== "perform-action") return;
+    if (a.confirmation && !confirm(a.confirmation.text ?? "Confermi?")) return;
+    const [domain, service] = a.perform_action.split(".");
+    hassNow.callService(domain, service, { ...(a.data ?? {}), ...(a.target ?? {}) });
+  });
 
   const toast = document.getElementById("toast");
   window.addEventListener("hass-more-info", (e) => {

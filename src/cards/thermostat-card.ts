@@ -1,7 +1,7 @@
 import { css, html, svg } from "lit";
 import { LuxBaseCard } from "../shared/base-card";
 import { clamp, entityName, fireMoreInfo, isUnavailable, numAttr, numState, startDrag } from "../shared/helpers";
-import { defineEditor } from "../shared/editor";
+import { defineEditor, type FormSchema } from "../shared/editor";
 import { PendingValue } from "../shared/pending-value";
 import type { LovelaceCardConfig } from "../shared/types";
 
@@ -17,8 +17,8 @@ export interface ThermostatCardConfig extends LovelaceCardConfig {
   compact?: boolean;
 }
 
-const getConfigElement = defineEditor("luxury-thermostat-card-editor", {
-  schema: [
+/** Editor fields shared with the mini thermostat card. */
+export const THERMOSTAT_FIELDS: FormSchema[] = [
     { name: "entity", required: true, selector: { entity: { domain: "climate" } } },
     { type: "grid", name: "", schema: [
       { name: "name", selector: { text: {} } },
@@ -30,14 +30,18 @@ const getConfigElement = defineEditor("luxury-thermostat-card-editor", {
       { name: "max", selector: { number: { min: 5, max: 35, step: 0.5, mode: "box", unit_of_measurement: "°C" } } },
       { name: "step", selector: { number: { min: 0.1, max: 1, step: 0.1, mode: "box" } } },
     ] },
-    { name: "compact", selector: { boolean: {} } },
-  ],
-  labels: {
-    humidity_entity: "Sensore umidità (opzionale)",
-    min: "Minima (opz.)",
-    max: "Massima (opz.)",
-    step: "Passo (opz.)",
-  },
+];
+
+export const THERMOSTAT_LABELS = {
+  humidity_entity: "Sensore umidità (opzionale)",
+  min: "Minima (opz.)",
+  max: "Massima (opz.)",
+  step: "Passo (opz.)",
+};
+
+const getConfigElement = defineEditor("luxury-thermostat-card-editor", {
+  schema: [...THERMOSTAT_FIELDS, { name: "compact", selector: { boolean: {} } }],
+  labels: THERMOSTAT_LABELS,
 });
 
 // Dial geometry (SVG viewBox 0 0 260 260): a 270° arc open at the bottom

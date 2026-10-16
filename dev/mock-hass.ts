@@ -119,6 +119,7 @@ const handlers: Record<string, (id: string, data: Record<string, unknown>) => vo
   "homeassistant.toggle": (id) => update(id, (e) => setOn(e, e.state !== "on")),
   "homeassistant.turn_on": (id) => update(id, (e) => setOn(e, true)),
   "homeassistant.turn_off": (id) => update(id, (e) => setOn(e, false)),
+  "light.turn_off": (id) => update(id, (e) => setOn(e, false)),
   "light.turn_on": (id, d) => update(id, (e) => setOn(e, true, d.brightness_pct as number | undefined)),
   "climate.set_temperature": (id, d) => {
     setAttrs(id, { temperature: d.temperature }, (d.hvac_mode as string) ?? states[id].state);

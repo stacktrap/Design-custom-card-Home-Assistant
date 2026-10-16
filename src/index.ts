@@ -1,11 +1,13 @@
+import { LuxButtonCard } from "./cards/button-card";
 import { LuxCoverCard } from "./cards/cover-card";
 import { LuxDimmerCard } from "./cards/dimmer-card";
 import { LuxEnergyCard } from "./cards/energy-card";
 import { LuxLightCard } from "./cards/light-card";
 import { LuxLightGroupCard } from "./cards/light-group-card";
 import { LuxThermostatCard } from "./cards/thermostat-card";
+import { LuxThermostatMiniCard } from "./cards/thermostat-mini-card";
 
-const VERSION = "0.3.0";
+const VERSION = "0.4.0";
 
 const CARDS = [
   {
@@ -43,6 +45,18 @@ const CARDS = [
     cls: LuxEnergyCard,
     name: "Luxury · Energia",
     description: "Flusso solare, casa e rete, batteria, grafico di oggi e totali.",
+  },
+  {
+    tag: "luxury-thermostat-mini-card",
+    cls: LuxThermostatMiniCard,
+    name: "Luxury · Riscaldamento mini",
+    description: "Riga con temperatura attuale e impostata; al tocco apre il termostato completo.",
+  },
+  {
+    tag: "luxury-button-card",
+    cls: LuxButtonCard,
+    name: "Luxury · Pulsante",
+    description: "Pulsante per qualsiasi azione: chiudi tutte le tapparelle, spegni tutte le luci, scene…",
   },
 ];
 

@@ -669,39 +669,13 @@ var Ne = o`
 	renderWarning(e) {
 		return E`<div class="card"><p class="warning">${e}</p></div>`;
 	}
-}, I = (e, t, n) => Math.min(n, Math.max(t, e)), L = (e, t) => {
-	let n = e?.attributes[t];
-	return typeof n == "number" && !Number.isNaN(n) ? n : void 0;
-}, R = (e) => {
-	let t = e ? parseFloat(e.state) : NaN;
-	return Number.isNaN(t) ? void 0 : t;
-}, z = (e) => e?.state === "on", B = (e) => !e || e.state === "unavailable" || e.state === "unknown", V = (e, t) => t ?? e?.attributes.friendly_name ?? e?.entity_id ?? "", Fe = (e) => {
-	let t = e?.attributes.brightness;
-	return z(e) && typeof t == "number" ? Math.max(1, Math.round(t / 255 * 100)) : 0;
-}, Ie = (e) => {
-	if (!e || !e.entity_id.startsWith("light.")) return !1;
-	let t = e.attributes.supported_color_modes;
-	return Array.isArray(t) ? t.some((e) => e !== "onoff") : typeof e.attributes.brightness == "number";
-}, Le = (e, t) => e.callService("homeassistant", "toggle", { entity_id: t }), Re = (e, t, n) => e.callService("homeassistant", n ? "turn_on" : "turn_off", { entity_id: t }), ze = (e, t, n) => e.callService("light", "turn_on", {
-	entity_id: t,
-	brightness_pct: I(Math.round(n), 1, 100)
-}), H = (e, t) => e.dispatchEvent(new CustomEvent("hass-more-info", {
-	detail: { entityId: t },
-	bubbles: !0,
-	composed: !0
-})), Be = (e, t, n, r) => {
-	t.setPointerCapture(e.pointerId), n(e);
-	let i = (e) => n(e), a = (e) => {
-		t.removeEventListener("pointermove", i), t.removeEventListener("pointerup", a), t.removeEventListener("pointercancel", a), r?.(e);
-	};
-	t.addEventListener("pointermove", i), t.addEventListener("pointerup", a), t.addEventListener("pointercancel", a);
-}, Ve = {
+}, Fe = {
 	entity: "Entità",
 	name: "Nome (opzionale)",
 	room: "Stanza / sottotitolo (opzionale)",
 	icon: "Icona",
 	compact: "Versione compatta"
-}, He = { select: {
+}, Ie = { select: {
 	mode: "dropdown",
 	custom_value: !0,
 	options: [
@@ -732,14 +706,46 @@ var Ne = o`
 		{
 			value: "strip",
 			label: "Striscia LED"
+		},
+		{
+			value: "blinds",
+			label: "Tapparella"
+		},
+		{
+			value: "blinds_open",
+			label: "Tapparella aperta"
+		},
+		{
+			value: "blinds_closed",
+			label: "Tapparella chiusa"
+		},
+		{
+			value: "power",
+			label: "Accensione"
+		},
+		{
+			value: "scene",
+			label: "Scena"
+		},
+		{
+			value: "moon",
+			label: "Notte"
+		},
+		{
+			value: "flame",
+			label: "Fiamma"
+		},
+		{
+			value: "thermometer",
+			label: "Termometro"
 		}
 	]
-} }, Ue, We = () => Ue ??= (async () => {
+} }, Le, Re = () => Le ??= (async () => {
 	customElements.get("ha-form") && customElements.get("ha-entity-picker") || await (await (await window.loadCardHelpers?.())?.createCardElement({
 		type: "entities",
 		entities: []
 	}))?.constructor?.getConfigElement?.();
-})(), Ge = class extends P {
+})(), ze = class extends P {
 	static {
 		this.properties = {
 			hass: { attribute: !1 },
@@ -748,7 +754,7 @@ var Ne = o`
 		};
 	}
 	constructor(e) {
-		super(), this.spec = e, this._label = (e) => this.spec.labels[e.name] ?? Ve[e.name] ?? e.name, this._ready = !!customElements.get("ha-form");
+		super(), this.spec = e, this._label = (e) => this.spec.labels[e.name] ?? Fe[e.name] ?? e.name, this._ready = !!customElements.get("ha-form");
 	}
 	static {
 		this.styles = o`
@@ -757,7 +763,7 @@ var Ne = o`
   `;
 	}
 	connectedCallback() {
-		super.connectedCallback(), this._ready || We().catch(() => void 0).then(() => customElements.whenDefined("ha-form")).then(() => this._ready = !0);
+		super.connectedCallback(), this._ready || Re().catch(() => void 0).then(() => customElements.whenDefined("ha-form")).then(() => this._ready = !0);
 	}
 	setConfig(e) {
 		this._config = e;
@@ -788,11 +794,252 @@ var Ne = o`
       ></ha-form>
     `;
 	}
-}, U = (e, t) => (customElements.get(e) || customElements.define(e, class extends Ge {
+}, I = (e, t) => (customElements.get(e) || customElements.define(e, class extends ze {
 	constructor() {
 		super(t);
 	}
-}), () => document.createElement(e)), W = class {
+}), () => document.createElement(e)), Be = {
+	bulb: D`<path d="M9 18h6M10 21h4M12 3a6 6 0 0 0-4 10.5c.7.7 1 1.5 1 2.5h6c0-1 .3-1.8 1-2.5A6 6 0 0 0 12 3z"/>`,
+	chandelier: D`<path d="M12 3v4M7 11a5 4 0 0 1 10 0M5 11h14l-2 4H7zM9 15v2M15 15v2M12 15v4"/>`,
+	floor: D`<path d="M8 3h8l2 6H6zM12 9v11M8 21h8"/>`,
+	strip: D`<rect x="3" y="10" width="18" height="4" rx="2"/><path d="M7 12h.01M12 12h.01M17 12h.01"/>`,
+	ceiling: D`<path d="M4 7h16M8 7l-2 6h12l-2-6M10 16.5l-.5 1.5M14 16.5l.5 1.5M12 17v2"/>`,
+	spot: D`<path d="M12 3v3M7 10l5-4 5 4-2 5H9zM9.5 18l-1 2M14.5 18l1 2M12 18v3"/>`,
+	table: D`<path d="M7 4h10l2 7H5zM12 11v7M8 20h8"/>`,
+	flame: D`<path d="M12 3c.5 3.5 5 5.5 5 10.5a5 5 0 0 1-10 0c0-2.4 1.2-3.9 2.4-5 .1 1.6.8 2.6 1.8 3.1C11 9 11.2 6 12 3z"/>`,
+	thermometer: D`<path d="M10 14.5V5a2 2 0 0 1 4 0v9.5a4 4 0 1 1-4 0zM12 9v7"/>`,
+	blinds: D`<path d="M4 4h16M5 4v12h14V4M5 8h14M5 12h14M12 16v3"/><circle cx="12" cy="20" r="1"/>`,
+	blinds_open: D`<path d="M4 4h16M5 4v4h14V4M12 18v-8M9 13l3-3 3 3"/>`,
+	blinds_closed: D`<path d="M4 4h16M5 4v14h14V4M5 8h14M5 12h14M5 15.5h14"/>`,
+	power: D`<path d="M12 3v8M7.5 6.2a7 7 0 1 0 9 0"/>`,
+	scene: D`<path d="M12 3l1.8 4.7L18.5 9.5l-4.7 1.8L12 16l-1.8-4.7L5.5 9.5l4.7-1.8zM18 15l.8 2.2L21 18l-2.2.8L18 21l-.8-2.2L15 18l2.2-.8z"/>`,
+	moon: D`<path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"/>`
+}, L = (e = "bulb") => e.includes(":") ? E`<ha-icon .icon=${e}></ha-icon>` : E`<svg class="icon" viewBox="0 0 24 24">${Be[e] ?? Be.bulb}</svg>`, Ve = 500, He = 1400, Ue = I("luxury-button-card-editor", {
+	schema: [
+		{
+			type: "grid",
+			name: "",
+			schema: [{
+				name: "name",
+				required: !0,
+				selector: { text: {} }
+			}, {
+				name: "room",
+				selector: { text: {} }
+			}]
+		},
+		{
+			name: "secondary",
+			selector: { text: {} }
+		},
+		{
+			name: "icon",
+			selector: Ie
+		},
+		{
+			name: "tap_action",
+			selector: { ui_action: {} }
+		},
+		{
+			name: "hold_action",
+			selector: { ui_action: {} }
+		},
+		{
+			type: "grid",
+			name: "",
+			schema: [{
+				name: "layout",
+				selector: { select: {
+					mode: "dropdown",
+					options: [{
+						value: "row",
+						label: "Riga"
+					}, {
+						value: "tile",
+						label: "Riquadro"
+					}]
+				} }
+			}, {
+				name: "compact",
+				selector: { boolean: {} }
+			}]
+		}
+	],
+	labels: {
+		name: "Nome",
+		secondary: "Testo secondario (opzionale)",
+		tap_action: "Azione al tocco",
+		hold_action: "Azione alla pressione prolungata",
+		layout: "Disposizione"
+	}
+}), We = class extends F {
+	static {
+		this.properties = {
+			...F.properties,
+			_fired: { state: !0 }
+		};
+	}
+	constructor() {
+		super(), this._held = !1, this._fired = !1;
+	}
+	static {
+		this.styles = [...F.styles, o`
+      .card {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 14px 18px;
+        cursor: pointer;
+        touch-action: manipulation;
+        transition: border-color 0.4s var(--ease), transform 0.2s var(--ease), background 0.4s var(--ease);
+      }
+      .card:hover { border-color: var(--gold-edge); }
+      .card:active { transform: scale(0.985); }
+      .card:focus-visible { outline: none; border-color: var(--gold-edge); }
+      .ico { width: 40px; height: 40px; color: var(--gold-hi); background: var(--gold-tint); }
+      .text { flex: 1; min-width: 0; }
+      .secondary { font-size: 12px; color: var(--muted); margin-top: 3px; transition: color 0.3s; }
+      .chevron { width: 16px; height: 16px; color: var(--faint); flex: none; transition: transform 0.3s var(--ease), color 0.3s; }
+      .card:hover .chevron { transform: translateX(2px); color: var(--muted); }
+      .fired { border-color: var(--gold-edge); }
+      .fired .ico {
+        color: var(--on-gold);
+        background: linear-gradient(135deg, var(--gold-hi), var(--gold));
+        box-shadow: 0 0 24px rgba(232, 211, 166, 0.35);
+      }
+      .fired .secondary { color: var(--gold-hi); }
+
+      /* Tile layout: icon on top, text below */
+      :host([layout="tile"]) .card {
+        flex-direction: column;
+        align-items: flex-start;
+        justify-content: space-between;
+        min-height: 104px;
+        padding: 14px 16px;
+      }
+      :host([layout="tile"]) .chevron { display: none; }
+      :host([layout="tile"]) .text { flex: none; width: 100%; }
+
+      :host([compact]) .card { padding: 10px 14px; }
+      :host([compact]) .ico { width: 34px; height: 34px; }
+      :host([compact]) .card-sub { display: none; }
+      :host([compact][layout="tile"]) .card { min-height: 84px; }
+    `];
+	}
+	static {
+		this.getConfigElement = Ue;
+	}
+	static getStubConfig() {
+		return {
+			name: "Chiudi tutto",
+			room: "Tapparelle",
+			icon: "blinds_closed",
+			tap_action: {
+				action: "perform-action",
+				perform_action: "cover.close_cover",
+				target: {}
+			}
+		};
+	}
+	setConfig(e) {
+		if (!e.name) throw Error("Specifica un nome (`name`)");
+		this._config = e;
+	}
+	getCardSize() {
+		return this._config?.layout === "tile" ? 2 : 1;
+	}
+	getGridOptions() {
+		return this._config?.layout === "tile" ? {
+			columns: 3,
+			min_columns: 3
+		} : {
+			columns: 6,
+			min_columns: 3
+		};
+	}
+	watchedEntities() {
+		return [];
+	}
+	willUpdate(e) {
+		super.willUpdate(e), this.setAttribute("layout", this._config?.layout ?? "row");
+	}
+	disconnectedCallback() {
+		super.disconnectedCallback(), clearTimeout(this._holdTimer), clearTimeout(this._feedbackTimer);
+	}
+	_run(e) {
+		let t = this._config, n = e === "tap" ? t.tap_action : t.hold_action;
+		n && n.action !== "none" && (this.dispatchEvent(new CustomEvent("hass-action", {
+			detail: {
+				config: {
+					tap_action: t.tap_action,
+					hold_action: t.hold_action
+				},
+				action: e
+			},
+			bubbles: !0,
+			composed: !0
+		})), !n.confirmation && (this._fired = !0, clearTimeout(this._feedbackTimer), this._feedbackTimer = window.setTimeout(() => this._fired = !1, He)));
+	}
+	_down() {
+		this._held = !1, this._config?.hold_action && (clearTimeout(this._holdTimer), this._holdTimer = window.setTimeout(() => {
+			this._held = !0, this._run("hold");
+		}, Ve));
+	}
+	_click() {
+		clearTimeout(this._holdTimer), this._held || this._run("tap"), this._held = !1;
+	}
+	render() {
+		if (!this._config) return null;
+		let e = this._config, t = this._fired ? "Fatto" : e.secondary;
+		return E`
+      <div
+        class="card ${this._fired ? "fired" : ""}"
+        role="button"
+        tabindex="0"
+        aria-label=${e.name}
+        @pointerdown=${this._down}
+        @pointerleave=${() => clearTimeout(this._holdTimer)}
+        @click=${this._click}
+        @keydown=${(e) => (e.key === "Enter" || e.key === " ") && (e.preventDefault(), this._run("tap"))}
+        @contextmenu=${(t) => e.hold_action && t.preventDefault()}
+      >
+        <span class="ico">${L(e.icon ?? "power")}</span>
+        <div class="text">
+          ${e.room ? E`<p class="card-sub">${e.room}</p>` : null}
+          <h2 class="card-title">${e.name}</h2>
+          ${t ? E`<div class="secondary">${t}</div>` : null}
+        </div>
+        <svg class="chevron icon" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6" /></svg>
+      </div>
+    `;
+	}
+}, R = (e, t, n) => Math.min(n, Math.max(t, e)), z = (e, t) => {
+	let n = e?.attributes[t];
+	return typeof n == "number" && !Number.isNaN(n) ? n : void 0;
+}, B = (e) => {
+	let t = e ? parseFloat(e.state) : NaN;
+	return Number.isNaN(t) ? void 0 : t;
+}, V = (e) => e?.state === "on", H = (e) => !e || e.state === "unavailable" || e.state === "unknown", U = (e, t) => t ?? e?.attributes.friendly_name ?? e?.entity_id ?? "", Ge = (e) => {
+	let t = e?.attributes.brightness;
+	return V(e) && typeof t == "number" ? Math.max(1, Math.round(t / 255 * 100)) : 0;
+}, Ke = (e) => {
+	if (!e || !e.entity_id.startsWith("light.")) return !1;
+	let t = e.attributes.supported_color_modes;
+	return Array.isArray(t) ? t.some((e) => e !== "onoff") : typeof e.attributes.brightness == "number";
+}, qe = (e, t) => e.callService("homeassistant", "toggle", { entity_id: t }), Je = (e, t, n) => e.callService("homeassistant", n ? "turn_on" : "turn_off", { entity_id: t }), Ye = (e, t, n) => e.callService("light", "turn_on", {
+	entity_id: t,
+	brightness_pct: R(Math.round(n), 1, 100)
+}), W = (e, t) => e.dispatchEvent(new CustomEvent("hass-more-info", {
+	detail: { entityId: t },
+	bubbles: !0,
+	composed: !0
+})), Xe = (e, t, n, r) => {
+	t.setPointerCapture(e.pointerId), n(e);
+	let i = (e) => n(e), a = (e) => {
+		t.removeEventListener("pointermove", i), t.removeEventListener("pointerup", a), t.removeEventListener("pointercancel", a), r?.(e);
+	};
+	t.addEventListener("pointermove", i), t.addEventListener("pointerup", a), t.addEventListener("pointercancel", a);
+}, G = class {
 	constructor(e, t = 1) {
 		this.host = e, this.tolerance = t, this._value = null, this._dragging = !1, e.addController(this);
 	}
@@ -816,7 +1063,7 @@ var Ne = o`
 	hostDisconnected() {
 		clearTimeout(this._timer);
 	}
-}, Ke = U("luxury-cover-card-editor", {
+}, Ze = I("luxury-cover-card-editor", {
 	schema: [
 		{
 			name: "entity",
@@ -860,13 +1107,13 @@ var Ne = o`
 			presets: n.length ? n : void 0
 		};
 	}
-}), qe = 4, Je = class extends F {
+}), Qe = 4, $e = class extends F {
 	constructor(...e) {
-		super(...e), this._position = new W(this), this._onWindowDown = (e) => {
+		super(...e), this._position = new G(this), this._onWindowDown = (e) => {
 			let t = e.currentTarget, n = null;
-			t.classList.add("dragging"), Be(e, t, (e) => {
+			t.classList.add("dragging"), Xe(e, t, (e) => {
 				let r = t.getBoundingClientRect();
-				n = I(Math.round(100 - (e.clientY - r.top) / r.height * 100), 0, 100), this._position.drag(n);
+				n = R(Math.round(100 - (e.clientY - r.top) / r.height * 100), 0, 100), this._position.drag(n);
 			}, () => {
 				t.classList.remove("dragging"), n !== null && this._setPosition(n);
 			});
@@ -980,7 +1227,7 @@ var Ne = o`
     `];
 	}
 	static {
-		this.getConfigElement = Ke;
+		this.getConfigElement = Ze;
 	}
 	static getStubConfig() {
 		return {
@@ -1011,7 +1258,7 @@ var Ne = o`
 		if (!this._config || !this.hass) return null;
 		let e = this._config.entity, t = this.hass.states[e];
 		if (!t) return this.renderWarning(`Entità non trovata: ${e}`);
-		let n = B(t), r = ((L(t, "supported_features") ?? 0) & qe) !== 0, i = L(t, "current_position") ?? (t.state === "closed" ? 0 : 100), a = this._position.resolve(i), o = t.state === "opening" || t.state === "closing", s = this._config.presets ?? [
+		let n = H(t), r = ((z(t, "supported_features") ?? 0) & Qe) !== 0, i = z(t, "current_position") ?? (t.state === "closed" ? 0 : 100), a = this._position.resolve(i), o = t.state === "opening" || t.state === "closing", s = this._config.presets ?? [
 			25,
 			50,
 			75
@@ -1019,9 +1266,9 @@ var Ne = o`
 		return E`
       <div class="card">
         <div class="card-head">
-          <div class="clickable" @click=${() => H(this, e)}>
+          <div class="clickable" @click=${() => W(this, e)}>
             ${this._config.room ? E`<p class="card-sub">${this._config.room}</p>` : null}
-            <h2 class="card-title">${V(t, this._config.name)}</h2>
+            <h2 class="card-title">${U(t, this._config.name)}</h2>
           </div>
           ${o ? E`<span class="moving">In movimento</span>` : null}
         </div>
@@ -1065,7 +1312,7 @@ var Ne = o`
       </div>
     `;
 	}
-}, Ye = class extends P {
+}, et = class extends P {
 	static {
 		this.properties = {
 			value: { type: Number },
@@ -1088,9 +1335,9 @@ var Ne = o`
 			if (this.disabled) return;
 			let t = e.currentTarget, n = (e) => {
 				let n = t.getBoundingClientRect();
-				return I(Math.round((e.clientX - n.left) / n.width * 100), 1, 100);
+				return R(Math.round((e.clientX - n.left) / n.width * 100), 1, 100);
 			};
-			Be(e, t, (e) => {
+			Xe(e, t, (e) => {
 				this._drag = n(e), this._emit("value-changing", this._drag);
 			}, () => {
 				let e = this._drag;
@@ -1104,7 +1351,7 @@ var Ne = o`
 				ArrowLeft: -5,
 				ArrowDown: -5
 			}[e.key];
-			t && (e.preventDefault(), this._commit(I(this._shown + t, 1, 100)));
+			t && (e.preventDefault(), this._commit(R(this._shown + t, 1, 100)));
 		}, this.value = 0, this.disabled = !1, this.off = !1, this.marks = !1, this.label = "", this._drag = null, this._hold = null;
 	}
 	static {
@@ -1197,10 +1444,10 @@ var Ne = o`
     `;
 	}
 };
-customElements.get("lux-slider") || customElements.define("lux-slider", Ye);
+customElements.get("lux-slider") || customElements.define("lux-slider", et);
 //#endregion
 //#region src/cards/dimmer-card.ts
-var Xe = U("luxury-dimmer-card-editor", {
+var tt = I("luxury-dimmer-card-editor", {
 	schema: [
 		{
 			name: "entity",
@@ -1224,9 +1471,9 @@ var Xe = U("luxury-dimmer-card-editor", {
 		}
 	],
 	labels: {}
-}), Ze = class extends F {
+}), nt = class extends F {
 	constructor(...e) {
-		super(...e), this._brightness = new W(this);
+		super(...e), this._brightness = new G(this);
 	}
 	static {
 		this.styles = [...F.styles, o`
@@ -1254,7 +1501,7 @@ var Xe = U("luxury-dimmer-card-editor", {
     `];
 	}
 	static {
-		this.getConfigElement = Xe;
+		this.getConfigElement = tt;
 	}
 	static getStubConfig() {
 		return {
@@ -1277,13 +1524,13 @@ var Xe = U("luxury-dimmer-card-editor", {
 		if (!this._config || !this.hass) return null;
 		let e = this._config.entity, t = this.hass.states[e];
 		if (!t) return this.renderWarning(`Entità non trovata: ${e}`);
-		let n = B(t), r = z(t), i = this._brightness.resolve(Fe(t)), a = r || this._brightness.active;
+		let n = H(t), r = V(t), i = this._brightness.resolve(Ge(t)), a = r || this._brightness.active;
 		return E`
       <div class="card" style="--glow-o:${a ? (.08 + i / 100 * .32).toFixed(2) : "0"}">
         <div class="card-head">
-          <div class="clickable" @click=${() => H(this, e)}>
+          <div class="clickable" @click=${() => W(this, e)}>
             ${this._config.room ? E`<p class="card-sub">${this._config.room}</p>` : null}
-            <h2 class="card-title">${V(t, this._config.name)}</h2>
+            <h2 class="card-title">${U(t, this._config.name)}</h2>
           </div>
           <span class="inline">${a ? `${i}%` : "Spenta"}</span>
           <button
@@ -1292,7 +1539,7 @@ var Xe = U("luxury-dimmer-card-editor", {
             aria-checked=${r}
             aria-label="Accendi o spegni"
             ?disabled=${n}
-            @click=${() => Le(this.hass, e)}
+            @click=${() => qe(this.hass, e)}
           ></button>
         </div>
         <div class="value"><span class="num">${a ? i : 0}</span><span class="unit">%</span></div>
@@ -1305,16 +1552,16 @@ var Xe = U("luxury-dimmer-card-editor", {
           ?disabled=${n}
           @value-changing=${(e) => this._brightness.drag(e.detail.value)}
           @value-changed=${(t) => {
-			this._brightness.commit(t.detail.value), ze(this.hass, e, t.detail.value);
+			this._brightness.commit(t.detail.value), Ye(this.hass, e, t.detail.value);
 		}}
         ></lux-slider>
       </div>
     `;
 	}
-}, G = (e) => ({ entity: {
+}, K = (e) => ({ entity: {
 	domain: "sensor",
 	device_class: e
-} }), Qe = U("luxury-energy-card-editor", {
+} }), rt = I("luxury-energy-card-editor", {
 	schema: [
 		{
 			type: "grid",
@@ -1334,35 +1581,35 @@ var Xe = U("luxury-dimmer-card-editor", {
 			schema: [
 				{
 					name: "home",
-					selector: G("power")
+					selector: K("power")
 				},
 				{
 					name: "solar",
-					selector: G("power")
+					selector: K("power")
 				},
 				{
 					name: "grid",
-					selector: G("power")
+					selector: K("power")
 				},
 				{
 					name: "battery",
-					selector: G("power")
+					selector: K("power")
 				},
 				{
 					name: "battery_soc",
-					selector: G("battery")
+					selector: K("battery")
 				},
 				{
 					name: "consumption_today",
-					selector: G("energy")
+					selector: K("energy")
 				},
 				{
 					name: "production_today",
-					selector: G("energy")
+					selector: K("energy")
 				},
 				{
 					name: "grid_import_today",
-					selector: G("energy")
+					selector: K("energy")
 				}
 			]
 		},
@@ -1416,33 +1663,33 @@ var Xe = U("luxury-dimmer-card-editor", {
 			entities: n
 		};
 	}
-}), $e = 6e5, et = 9e5, tt = 864e5, K = (e) => {
-	let t = R(e);
+}), it = 6e5, at = 9e5, ot = 864e5, q = (e) => {
+	let t = B(e);
 	if (t === void 0) return;
 	let n = String(e.attributes.unit_of_measurement ?? "W");
 	return n === "kW" ? t * 1e3 : n === "MW" ? t * 1e6 : t;
-}, q = (e) => {
-	let t = R(e);
+}, st = (e) => {
+	let t = B(e);
 	if (t === void 0) return;
 	let n = String(e.attributes.unit_of_measurement ?? "kWh");
 	return n === "Wh" ? t / 1e3 : n === "MWh" ? t * 1e3 : t;
-}, nt = (e) => Math.abs(e) < 1e3 ? {
+}, ct = (e) => Math.abs(e) < 1e3 ? {
 	num: String(Math.round(e)),
 	unit: "W"
 } : {
 	num: (e / 1e3).toFixed(2),
 	unit: "kW"
 }, J = (e, t = !1) => {
-	let { num: n, unit: r } = nt(Math.abs(e));
+	let { num: n, unit: r } = ct(Math.abs(e));
 	return `${t ? e < 0 ? "−" : "+" : ""}${n} ${r}`;
-}, rt = () => {
+}, lt = () => {
 	let e = /* @__PURE__ */ new Date();
 	return e.setHours(0, 0, 0, 0), e.getTime();
-}, it = {
+}, ut = {
 	solar: D`<circle cx="12" cy="12" r="4"/><path d="M12 3v2M12 19v2M3 12h2M19 12h2M5.6 5.6l1.4 1.4M17 17l1.4 1.4M5.6 18.4L7 17M17 7l1.4-1.4"/>`,
 	home: D`<path d="M4 11l8-7 8 7M6 9.5V20h12V9.5M10 20v-5h4v5"/>`,
 	grid: D`<path d="M12 3l-5 18M12 3l5 18M8.5 15h7M9.6 11h4.8M5 7h14M12 3v4"/>`
-}, at = class extends F {
+}, dt = class extends F {
 	static {
 		this.properties = {
 			...F.properties,
@@ -1506,7 +1753,7 @@ var Xe = U("luxury-dimmer-card-editor", {
     `];
 	}
 	static {
-		this.getConfigElement = Qe;
+		this.getConfigElement = rt;
 	}
 	static getStubConfig() {
 		return { entities: {
@@ -1532,7 +1779,7 @@ var Xe = U("luxury-dimmer-card-editor", {
 		return Object.values(this._config?.entities ?? {}).filter((e) => !!e);
 	}
 	connectedCallback() {
-		super.connectedCallback(), this._historyTimer = window.setInterval(() => this._loadHistory(), $e);
+		super.connectedCallback(), this._historyTimer = window.setInterval(() => this._loadHistory(), it);
 	}
 	disconnectedCallback() {
 		super.disconnectedCallback(), clearInterval(this._historyTimer);
@@ -1544,7 +1791,7 @@ var Xe = U("luxury-dimmer-card-editor", {
 	async _loadHistory() {
 		let e = this._config?.entities.home;
 		if (!this.hass || !e || this._config?.history === !1) return;
-		let t = rt();
+		let t = lt();
 		try {
 			let n = await this.hass.callWS({
 				type: "history/history_during_period",
@@ -1556,7 +1803,7 @@ var Xe = U("luxury-dimmer-card-editor", {
 				t: e.lu * 1e3,
 				w: parseFloat(e.s) * r
 			})).filter((e) => !Number.isNaN(e.w)), a = [], o = 0, s = i[0]?.w ?? 0;
-			for (let e = t; e <= Date.now(); e += et) {
+			for (let e = t; e <= Date.now(); e += at) {
 				for (; o < i.length && i[o].t <= e;) s = i[o++].w;
 				a.push({
 					t: e,
@@ -1607,8 +1854,8 @@ var Xe = U("luxury-dimmer-card-editor", {
 		})}
         ${i.map((e, t) => D`
             <circle class="node ${e.hot ? "hot" : ""}" cx=${a[t]} cy="44" r=${o(e.key)}
-              @click=${() => e.id && H(this, e.id)} />
-            <g class="glyph" transform="translate(${a[t] - 12} 32)">${it[e.key]}</g>
+              @click=${() => e.id && W(this, e.id)} />
+            <g class="glyph" transform="translate(${a[t] - 12} 32)">${ut[e.key]}</g>
             <text x=${a[t]} y="92" text-anchor="middle">${e.label}</text>
             <text x=${a[t]} y="110" text-anchor="middle" class="v">${e.value}</text>
           `)}
@@ -1618,7 +1865,7 @@ var Xe = U("luxury-dimmer-card-editor", {
 	_renderChart() {
 		let e = this._history;
 		if (!e || e.length < 2) return k;
-		let t = rt(), n = Math.max(...e.map((e) => e.w), 1), r = e.map((e) => [(e.t - t) / tt * 300, 68 - I(e.w, 0, n) / n * 60]), i = r.map((e, t) => `${t ? "L" : "M"}${e[0].toFixed(1)} ${e[1].toFixed(1)}`).join(" "), a = r[r.length - 1][0], o = (Date.now() - t) / tt * 300;
+		let t = lt(), n = Math.max(...e.map((e) => e.w), 1), r = e.map((e) => [(e.t - t) / ot * 300, 68 - R(e.w, 0, n) / n * 60]), i = r.map((e, t) => `${t ? "L" : "M"}${e[0].toFixed(1)} ${e[1].toFixed(1)}`).join(" "), a = r[r.length - 1][0], o = (Date.now() - t) / ot * 300;
 		return E`
       <svg class="spark" viewBox="0 0 300 72" preserveAspectRatio="none">
         <defs>
@@ -1636,13 +1883,13 @@ var Xe = U("luxury-dimmer-card-editor", {
 	}
 	render() {
 		if (!this._config || !this.hass) return null;
-		let e = this._config.entities, t = this.hass.states, n = (e) => e ? t[e] : void 0, r = K(n(e.solar)), i = K(n(e.battery));
+		let e = this._config.entities, t = this.hass.states, n = (e) => e ? t[e] : void 0, r = q(n(e.solar)), i = q(n(e.battery));
 		i !== void 0 && this._config.invert_battery && (i = -i);
-		let a = K(n(e.grid));
+		let a = q(n(e.grid));
 		a !== void 0 && this._config.invert_grid && (a = -a);
-		let o = K(n(e.home)) ?? (r ?? 0) + (a ?? 0) - (i ?? 0);
+		let o = q(n(e.home)) ?? (r ?? 0) + (a ?? 0) - (i ?? 0);
 		a === void 0 && e.home && e.solar && (a = o + (i ?? 0) - r);
-		let s = R(n(e.battery_soc)), c = q(n(e.consumption_today)), l = q(n(e.production_today)), u = q(n(e.grid_import_today)), d = c !== void 0 && u !== void 0 && c > 0 ? I(Math.round((1 - u / c) * 100), 0, 100) : void 0, f = nt(o), p = a === void 0 ? "Consumo attuale" : `Consumo attuale · ${a < 0 ? "in immissione" : "dalla rete"} ${J(Math.abs(a))}`, m = [
+		let s = B(n(e.battery_soc)), c = st(n(e.consumption_today)), l = st(n(e.production_today)), u = st(n(e.grid_import_today)), d = c !== void 0 && u !== void 0 && c > 0 ? R(Math.round((1 - u / c) * 100), 0, 100) : void 0, f = ct(o), p = a === void 0 ? "Consumo attuale" : `Consumo attuale · ${a < 0 ? "in immissione" : "dalla rete"} ${J(Math.abs(a))}`, m = [
 			c === void 0 ? null : {
 				k: "Consumo",
 				v: c.toFixed(1),
@@ -1675,7 +1922,7 @@ var Xe = U("luxury-dimmer-card-editor", {
 
         ${s === void 0 ? null : E`<div class="battery">
               <span>Batteria <b>${Math.round(s)}%</b></span>
-              <div class="bar"><span style="width:${I(s, 0, 100)}%"></span></div>
+              <div class="bar"><span style="width:${R(s, 0, 100)}%"></span></div>
               ${i === void 0 ? null : E`<span>${J(i, !0)}</span>`}
             </div>`}
 
@@ -1687,15 +1934,7 @@ var Xe = U("luxury-dimmer-card-editor", {
       </div>
     `;
 	}
-}, ot = {
-	bulb: D`<path d="M9 18h6M10 21h4M12 3a6 6 0 0 0-4 10.5c.7.7 1 1.5 1 2.5h6c0-1 .3-1.8 1-2.5A6 6 0 0 0 12 3z"/>`,
-	chandelier: D`<path d="M12 3v4M7 11a5 4 0 0 1 10 0M5 11h14l-2 4H7zM9 15v2M15 15v2M12 15v4"/>`,
-	floor: D`<path d="M8 3h8l2 6H6zM12 9v11M8 21h8"/>`,
-	strip: D`<rect x="3" y="10" width="18" height="4" rx="2"/><path d="M7 12h.01M12 12h.01M17 12h.01"/>`,
-	ceiling: D`<path d="M4 7h16M8 7l-2 6h12l-2-6M10 16.5l-.5 1.5M14 16.5l.5 1.5M12 17v2"/>`,
-	spot: D`<path d="M12 3v3M7 10l5-4 5 4-2 5H9zM9.5 18l-1 2M14.5 18l1 2M12 18v3"/>`,
-	table: D`<path d="M7 4h10l2 7H5zM12 11v7M8 20h8"/>`
-}, st = (e = "bulb") => e.includes(":") ? E`<ha-icon .icon=${e}></ha-icon>` : E`<svg class="icon" viewBox="0 0 24 24">${ot[e] ?? ot.bulb}</svg>`, ct = U("luxury-light-card-editor", {
+}, ft = I("luxury-light-card-editor", {
 	schema: [
 		{
 			name: "entity",
@@ -1715,7 +1954,7 @@ var Xe = U("luxury-dimmer-card-editor", {
 		},
 		{
 			name: "icon",
-			selector: He
+			selector: Ie
 		},
 		{
 			type: "grid",
@@ -1734,9 +1973,9 @@ var Xe = U("luxury-dimmer-card-editor", {
 		...e,
 		brightness: e.brightness ?? !0
 	})
-}), lt = class extends F {
+}), pt = class extends F {
 	constructor(...e) {
-		super(...e), this._brightness = new W(this);
+		super(...e), this._brightness = new G(this);
 	}
 	static {
 		this.styles = [...F.styles, o`
@@ -1756,7 +1995,7 @@ var Xe = U("luxury-dimmer-card-editor", {
     `];
 	}
 	static {
-		this.getConfigElement = ct;
+		this.getConfigElement = ft;
 	}
 	static getStubConfig() {
 		return {
@@ -1778,14 +2017,14 @@ var Xe = U("luxury-dimmer-card-editor", {
 		if (!this._config || !this.hass) return null;
 		let e = this._config.entity, t = this.hass.states[e];
 		if (!t) return this.renderWarning(`Entità non trovata: ${e}`);
-		let n = B(t), r = z(t), i = Ie(t) && this._config.brightness !== !1, a = this._brightness.resolve(Fe(t)), o = r || this._brightness.active, s = n ? "Non disponibile" : o ? i ? `Accesa · ${a}%` : "Accesa" : "Spenta", c = () => !n && Le(this.hass, e);
+		let n = H(t), r = V(t), i = Ke(t) && this._config.brightness !== !1, a = this._brightness.resolve(Ge(t)), o = r || this._brightness.active, s = n ? "Non disponibile" : o ? i ? `Accesa · ${a}%` : "Accesa" : "Spenta", c = () => !n && qe(this.hass, e);
 		return E`
       <div class="card ${o ? "on" : ""}">
         <div class="row">
-          <button class="ico" aria-label="Accendi o spegni" @click=${c}>${st(this._config.icon)}</button>
-          <div class="text" @click=${() => H(this, e)}>
+          <button class="ico" aria-label="Accendi o spegni" @click=${c}>${L(this._config.icon)}</button>
+          <div class="text" @click=${() => W(this, e)}>
             ${this._config.room ? E`<p class="card-sub">${this._config.room}</p>` : null}
-            <h2 class="card-title">${V(t, this._config.name)}</h2>
+            <h2 class="card-title">${U(t, this._config.name)}</h2>
             <div class="state">${s}</div>
           </div>
           <button
@@ -1804,13 +2043,13 @@ var Xe = U("luxury-dimmer-card-editor", {
               ?disabled=${n}
               @value-changing=${(e) => this._brightness.drag(e.detail.value)}
               @value-changed=${(t) => {
-			this._brightness.commit(t.detail.value), ze(this.hass, e, t.detail.value);
+			this._brightness.commit(t.detail.value), Ye(this.hass, e, t.detail.value);
 		}}
             ></lux-slider>` : null}
       </div>
     `;
 	}
-}, ut = U("luxury-light-group-card-editor", {
+}, mt = I("luxury-light-group-card-editor", {
 	schema: [
 		{
 			name: "title",
@@ -1867,7 +2106,7 @@ var Xe = U("luxury-dimmer-card-editor", {
 			entities: r
 		};
 	}
-}), dt = 500, ft = class extends F {
+}), ht = 500, gt = class extends F {
 	constructor(...e) {
 		super(...e), this._entries = [], this._held = !1;
 	}
@@ -1906,7 +2145,7 @@ var Xe = U("luxury-dimmer-card-editor", {
     `];
 	}
 	static {
-		this.getConfigElement = ut;
+		this.getConfigElement = mt;
 	}
 	static getStubConfig() {
 		return {
@@ -1932,15 +2171,15 @@ var Xe = U("luxury-dimmer-card-editor", {
 	}
 	_pointerDown(e) {
 		this._held = !1, clearTimeout(this._holdTimer), this._holdTimer = window.setTimeout(() => {
-			this._held = !0, H(this, e);
-		}, dt);
+			this._held = !0, W(this, e);
+		}, ht);
 	}
 	_click(e) {
-		clearTimeout(this._holdTimer), this._held || Le(this.hass, e), this._held = !1;
+		clearTimeout(this._holdTimer), this._held || qe(this.hass, e), this._held = !1;
 	}
 	render() {
 		if (!this._config || !this.hass) return null;
-		let e = this.hass.states, t = this._entries.map((e) => e.entity), n = t.filter((t) => z(e[t])).length, r = n ? `${n} di ${t.length} accese` : "Tutte spente";
+		let e = this.hass.states, t = this._entries.map((e) => e.entity), n = t.filter((t) => V(e[t])).length, r = n ? `${n} di ${t.length} accese` : "Tutte spente";
 		return E`
       <div class="card">
         <div class="card-head">
@@ -1953,12 +2192,12 @@ var Xe = U("luxury-dimmer-card-editor", {
                 role="switch"
                 aria-checked=${n > 0}
                 aria-label="Tutte le luci"
-                @click=${() => Re(this.hass, t, n === 0)}
+                @click=${() => Je(this.hass, t, n === 0)}
               ></button>`}
         </div>
         <div class="tiles" style="--cols:${this._config.columns ?? 2}">
           ${this._entries.map((t) => {
-			let n = e[t.entity], r = B(n), i = z(n), a = r ? "Non disponibile" : i ? Ie(n) ? `Accesa · ${Fe(n)}%` : "Accesa" : "Spenta";
+			let n = e[t.entity], r = H(n), i = V(n), a = r ? "Non disponibile" : i ? Ke(n) ? `Accesa · ${Ge(n)}%` : "Accesa" : "Spenta";
 			return E`
               <button
                 class="tile ${i ? "on" : ""}"
@@ -1968,9 +2207,9 @@ var Xe = U("luxury-dimmer-card-editor", {
                 @click=${() => this._click(t.entity)}
                 @contextmenu=${(e) => e.preventDefault()}
               >
-                <span class="ico">${st(t.icon)}</span>
+                <span class="ico">${L(t.icon)}</span>
                 <span>
-                  <div class="name">${V(n, t.name)}</div>
+                  <div class="name">${U(n, t.name)}</div>
                   <div class="state">${a}</div>
                 </span>
               </button>
@@ -1980,92 +2219,91 @@ var Xe = U("luxury-dimmer-card-editor", {
       </div>
     `;
 	}
-}, pt = U("luxury-thermostat-card-editor", {
-	schema: [
-		{
-			name: "entity",
-			required: !0,
-			selector: { entity: { domain: "climate" } }
-		},
-		{
-			type: "grid",
-			name: "",
-			schema: [{
-				name: "name",
-				selector: { text: {} }
-			}, {
-				name: "room",
-				selector: { text: {} }
-			}]
-		},
-		{
-			name: "humidity_entity",
-			selector: { entity: {
-				domain: "sensor",
-				device_class: "humidity"
-			} }
-		},
-		{
-			type: "grid",
-			name: "",
-			schema: [
-				{
-					name: "min",
-					selector: { number: {
-						min: 5,
-						max: 35,
-						step: .5,
-						mode: "box",
-						unit_of_measurement: "°C"
-					} }
-				},
-				{
-					name: "max",
-					selector: { number: {
-						min: 5,
-						max: 35,
-						step: .5,
-						mode: "box",
-						unit_of_measurement: "°C"
-					} }
-				},
-				{
-					name: "step",
-					selector: { number: {
-						min: .1,
-						max: 1,
-						step: .1,
-						mode: "box"
-					} }
-				}
-			]
-		},
-		{
-			name: "compact",
-			selector: { boolean: {} }
-		}
-	],
-	labels: {
-		humidity_entity: "Sensore umidità (opzionale)",
-		min: "Minima (opz.)",
-		max: "Massima (opz.)",
-		step: "Passo (opz.)"
+}, _t = [
+	{
+		name: "entity",
+		required: !0,
+		selector: { entity: { domain: "climate" } }
+	},
+	{
+		type: "grid",
+		name: "",
+		schema: [{
+			name: "name",
+			selector: { text: {} }
+		}, {
+			name: "room",
+			selector: { text: {} }
+		}]
+	},
+	{
+		name: "humidity_entity",
+		selector: { entity: {
+			domain: "sensor",
+			device_class: "humidity"
+		} }
+	},
+	{
+		type: "grid",
+		name: "",
+		schema: [
+			{
+				name: "min",
+				selector: { number: {
+					min: 5,
+					max: 35,
+					step: .5,
+					mode: "box",
+					unit_of_measurement: "°C"
+				} }
+			},
+			{
+				name: "max",
+				selector: { number: {
+					min: 5,
+					max: 35,
+					step: .5,
+					mode: "box",
+					unit_of_measurement: "°C"
+				} }
+			},
+			{
+				name: "step",
+				selector: { number: {
+					min: .1,
+					max: 1,
+					step: .1,
+					mode: "box"
+				} }
+			}
+		]
 	}
-}), Y = 130, X = 100, Z = 135, Q = 270, mt = 60, $ = (e, t) => {
+], vt = {
+	humidity_entity: "Sensore umidità (opzionale)",
+	min: "Minima (opz.)",
+	max: "Massima (opz.)",
+	step: "Passo (opz.)"
+}, yt = I("luxury-thermostat-card-editor", {
+	schema: [..._t, {
+		name: "compact",
+		selector: { boolean: {} }
+	}],
+	labels: vt
+}), Y = 130, X = 100, Z = 135, Q = 270, bt = 60, $ = (e, t) => {
 	let n = t * Math.PI / 180;
 	return [Y + e * Math.cos(n), Y + e * Math.sin(n)];
-}, ht = (e, t) => {
+}, xt = (e, t) => {
 	let [n, r] = $(X, e), [i, a] = $(X, t);
 	return `M${n} ${r} A${X} ${X} 0 ${+(t - e > 180)} 1 ${i} ${a}`;
-}, gt = class extends F {
+}, St = class extends F {
 	constructor(...e) {
-		super(...e), this._target = new W(this, .01), this._onDialDown = (e) => {
-			if (B(this._entity)) return;
+		super(...e), this._target = new G(this, .01), this._onDialDown = (e) => {
+			if (H(this._entity)) return;
 			let t = e.currentTarget, { min: n, max: r } = this._range, i = (e) => {
 				let i = t.getBoundingClientRect(), a = (e.clientX - i.left) / i.width * 260 - Y, o = (e.clientY - i.top) / i.height * 260 - Y, s = (Math.atan2(o, a) * 180 / Math.PI - Z + 720) % 360;
 				return s > Q && (s = s > 315 ? 0 : Q), this._round(n + (r - n) * s / Q);
 			}, a = null;
-			Be(e, t, (e) => {
+			Xe(e, t, (e) => {
 				a = i(e), this._target.drag(a);
 			}, () => {
 				a !== null && (this._target.commit(a), this._setTemperature(a));
@@ -2147,7 +2385,7 @@ var Xe = U("luxury-dimmer-card-editor", {
     `];
 	}
 	static {
-		this.getConfigElement = pt;
+		this.getConfigElement = yt;
 	}
 	static getStubConfig() {
 		return {
@@ -2174,14 +2412,14 @@ var Xe = U("luxury-dimmer-card-editor", {
 	get _range() {
 		let e = this._entity;
 		return {
-			min: this._config.min ?? L(e, "min_temp") ?? 7,
-			max: this._config.max ?? L(e, "max_temp") ?? 30,
-			step: this._config.step ?? L(e, "target_temp_step") ?? .5
+			min: this._config.min ?? z(e, "min_temp") ?? 7,
+			max: this._config.max ?? z(e, "max_temp") ?? 30,
+			step: this._config.step ?? z(e, "target_temp_step") ?? .5
 		};
 	}
 	_round(e) {
 		let { min: t, max: n, step: r } = this._range;
-		return I(Math.round(e / r) * r, t, n);
+		return R(Math.round(e / r) * r, t, n);
 	}
 	_setTemperature(e) {
 		let t = this._entity?.state !== "off";
@@ -2208,13 +2446,13 @@ var Xe = U("luxury-dimmer-card-editor", {
 		if (!this._config || !this.hass) return null;
 		let e = this._entity;
 		if (!e) return this.renderWarning(`Entità non trovata: ${this._config.entity}`);
-		let t = B(e), { min: n, max: r } = this._range, i = !t && e.state !== "off", a = this._target.resolve(L(e, "temperature") ?? n), o = L(e, "current_temperature"), s = L(e, "current_humidity") ?? (this._config.humidity_entity ? R(this.hass.states[this._config.humidity_entity]) : void 0), c = e.attributes.hvac_action, l = i && (c ? c === "heating" : o !== void 0 && o < a), u = t ? "Non disponibile" : i ? l ? "Riscaldamento in corso" : "Temperatura raggiunta" : "Spento", d = I((a - n) / (r - n), 0, 1), f = Z + Math.max(Q * d, .01), [p, m] = $(X, f), h = i || this._target.active;
+		let t = H(e), { min: n, max: r } = this._range, i = !t && e.state !== "off", a = this._target.resolve(z(e, "temperature") ?? n), o = z(e, "current_temperature"), s = z(e, "current_humidity") ?? (this._config.humidity_entity ? B(this.hass.states[this._config.humidity_entity]) : void 0), c = e.attributes.hvac_action, l = i && (c ? c === "heating" : o !== void 0 && o < a), u = t ? "Non disponibile" : i ? l ? "Riscaldamento in corso" : "Temperatura raggiunta" : "Spento", d = R((a - n) / (r - n), 0, 1), f = Z + Math.max(Q * d, .01), [p, m] = $(X, f), h = i || this._target.active;
 		return E`
       <div class="card ${h ? "" : "off"}">
         <div class="card-head">
-          <div class="clickable" @click=${() => H(this, this._config.entity)}>
+          <div class="clickable" @click=${() => W(this, this._config.entity)}>
             ${this._config.room ? E`<p class="card-sub">${this._config.room}</p>` : null}
-            <h2 class="card-title">${V(e, this._config.name ?? "Riscaldamento")}</h2>
+            <h2 class="card-title">${U(e, this._config.name ?? "Riscaldamento")}</h2>
           </div>
           <button
             class="switch"
@@ -2236,12 +2474,12 @@ var Xe = U("luxury-dimmer-card-editor", {
               <filter id="glow" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="6" /></filter>
             </defs>
             ${Array.from({ length: 61 }, (e, t) => {
-			let n = Z + Q * t / mt, [r, i] = $(116, n), [a, o] = $(t % 10 == 0 ? 124 : 120, n);
-			return D`<line class="tick ${h && t / mt <= d ? "on" : ""}" x1=${r} y1=${i} x2=${a} y2=${o} />`;
+			let n = Z + Q * t / bt, [r, i] = $(116, n), [a, o] = $(t % 10 == 0 ? 124 : 120, n);
+			return D`<line class="tick ${h && t / bt <= d ? "on" : ""}" x1=${r} y1=${i} x2=${a} y2=${o} />`;
 		})}
-            <path d=${ht(Z, 405)} stroke="rgba(255,240,220,.08)" stroke-width="2" fill="none" stroke-linecap="round" />
-            <path d=${ht(Z, f)} stroke="url(#grad)" stroke-width="6" fill="none" stroke-linecap="round" filter="url(#glow)" opacity=".55" />
-            <path d=${ht(Z, f)} stroke="url(#grad)" stroke-width="3.5" fill="none" stroke-linecap="round" />
+            <path d=${xt(Z, 405)} stroke="rgba(255,240,220,.08)" stroke-width="2" fill="none" stroke-linecap="round" />
+            <path d=${xt(Z, f)} stroke="url(#grad)" stroke-width="6" fill="none" stroke-linecap="round" filter="url(#glow)" opacity=".55" />
+            <path d=${xt(Z, f)} stroke="url(#grad)" stroke-width="3.5" fill="none" stroke-linecap="round" />
             <circle cx=${p} cy=${m} r="16" style="fill:var(--acc)" opacity=".14" />
             <circle cx=${p} cy=${m} r="8" fill="#1A1815" style="stroke:var(--acc-hi)" stroke-width="2" />
           </svg>
@@ -2266,47 +2504,242 @@ var Xe = U("luxury-dimmer-card-editor", {
       </div>
     `;
 	}
-}, _t = "0.3.0", vt = [
+}, Ct = class extends P {
+	static {
+		this.properties = { _open: { state: !0 } };
+	}
+	constructor() {
+		super(), this._onKey = (e) => e.key === "Escape" && this.close(), this._onPop = () => this._dismiss(), this._open = !1;
+	}
+	static {
+		this.styles = [Ne, o`
+      .backdrop {
+        position: fixed;
+        inset: 0;
+        z-index: 9999;
+        display: grid;
+        place-items: center;
+        padding: 16px;
+        background: rgba(6, 5, 4, 0.62);
+        backdrop-filter: blur(14px);
+        -webkit-backdrop-filter: blur(14px);
+        opacity: 0;
+        transition: opacity 0.3s var(--ease);
+      }
+      .panel {
+        position: relative;
+        width: min(380px, 100%);
+        transform: translateY(14px) scale(0.97);
+        transition: transform 0.35s var(--ease);
+      }
+      .open .backdrop { opacity: 1; }
+      .open .panel { transform: none; }
+      .close {
+        position: absolute;
+        top: -48px;
+        right: 0;
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        border: 1px solid var(--line-2);
+        background: var(--surface);
+        color: var(--text);
+        display: grid;
+        place-items: center;
+        cursor: pointer;
+      }
+      .close svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linecap: round; }
+    `];
+	}
+	show(e, t) {
+		this._card = e, this._onClose = t, document.body.appendChild(this), requestAnimationFrame(() => requestAnimationFrame(() => this._open = !0)), window.addEventListener("keydown", this._onKey), history.pushState({ luxDialog: !0 }, ""), window.addEventListener("popstate", this._onPop);
+	}
+	close() {
+		this.isConnected && (history.state?.luxDialog ? history.back() : this._dismiss());
+	}
+	_dismiss() {
+		window.removeEventListener("keydown", this._onKey), window.removeEventListener("popstate", this._onPop), this._open = !1, setTimeout(() => {
+			this.remove(), this._onClose?.();
+		}, 300);
+	}
+	render() {
+		return E`
+      <div class=${this._open ? "open" : ""}>
+        <div class="backdrop" @click=${(e) => e.target === e.currentTarget && this.close()}>
+          <div class="panel" role="dialog" aria-modal="true">
+            <button class="close" aria-label="Chiudi" @click=${() => this.close()}>
+              <svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18" /></svg>
+            </button>
+            ${this._card}
+          </div>
+        </div>
+      </div>
+    `;
+	}
+};
+customElements.get("lux-card-dialog") || customElements.define("lux-card-dialog", Ct);
+//#endregion
+//#region src/cards/thermostat-mini-card.ts
+var wt = I("luxury-thermostat-mini-card-editor", {
+	schema: [..._t, {
+		name: "compact",
+		selector: { boolean: {} }
+	}],
+	labels: vt
+}), Tt = class extends F {
+	static {
+		this.styles = [...F.styles, o`
+      .card {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 14px 18px;
+        cursor: pointer;
+        transition: border-color 0.4s var(--ease), transform 0.2s var(--ease);
+      }
+      .card:active { transform: scale(0.985); }
+      .card:focus-visible { outline: none; border-color: var(--gold-edge); }
+      .card.heating { border-color: var(--gold-edge); }
+      .ico { width: 40px; height: 40px; }
+      .idle .ico { color: var(--gold); background: var(--gold-tint); }
+      .text { flex: 1; min-width: 0; }
+      .state { font-size: 12px; color: var(--muted); margin-top: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+      .heating .state { color: var(--gold-hi); }
+      .temp { display: flex; align-items: flex-start; flex: none; }
+      .temp .num { font-size: 30px; line-height: 1; }
+      .temp sup { font-size: 13px; color: var(--gold); margin-left: 1px; line-height: 1.2; }
+      .off .temp .num { color: var(--muted); }
+
+      :host([compact]) .card { padding: 10px 14px; }
+      :host([compact]) .ico { width: 34px; height: 34px; }
+      :host([compact]) .card-sub { display: none; }
+      :host([compact]) .temp .num { font-size: 24px; }
+    `];
+	}
+	static {
+		this.getConfigElement = wt;
+	}
+	static getStubConfig() {
+		return {
+			entity: "climate.example",
+			room: "Soggiorno"
+		};
+	}
+	setConfig(e) {
+		if (!e.entity?.startsWith("climate.")) throw Error("Specifica un'entità climate.*");
+		this._config = e, this._fullCard?.setConfig(this._fullConfig());
+	}
+	getCardSize() {
+		return 1;
+	}
+	watchedEntities() {
+		return this._config ? [this._config.entity, this._config.humidity_entity].filter((e) => !!e) : [];
+	}
+	updated(e) {
+		super.updated(e), this._fullCard && e.has("hass") && (this._fullCard.hass = this.hass);
+	}
+	disconnectedCallback() {
+		super.disconnectedCallback(), this._dialog?.close();
+	}
+	_fullConfig() {
+		let { compact: e, ...t } = this._config;
+		return {
+			...t,
+			type: "custom:luxury-thermostat-card"
+		};
+	}
+	_open() {
+		if (this._dialog || !this._config) return;
+		let e = document.createElement("luxury-thermostat-card");
+		e.setConfig(this._fullConfig()), e.hass = this.hass, e.addEventListener("hass-more-info", (e) => {
+			e.stopPropagation(), this._dialog?.close(), this.dispatchEvent(new CustomEvent("hass-more-info", {
+				detail: e.detail,
+				bubbles: !0,
+				composed: !0
+			}));
+		}), this._fullCard = e, this._dialog = new Ct(), this._dialog.show(e, () => {
+			this._dialog = void 0, this._fullCard = void 0;
+		});
+	}
+	render() {
+		if (!this._config || !this.hass) return null;
+		let e = this.hass.states[this._config.entity];
+		if (!e) return this.renderWarning(`Entità non trovata: ${this._config.entity}`);
+		let t = H(e), n = !t && e.state !== "off", r = z(e, "temperature"), i = z(e, "current_temperature"), a = e.attributes.hvac_action, o = n && (a ? a === "heating" : i !== void 0 && r !== void 0 && i < r), s = t ? "Non disponibile" : n ? `${o ? "Riscalda" : "In attesa"}${r === void 0 ? "" : ` · impostata ${r.toFixed(1)}°`}` : "Spento";
+		return E`
+      <div
+        class="card ${o ? "heating" : n ? "idle" : "off"} ${o ? "on" : ""}"
+        role="button"
+        tabindex="0"
+        aria-label="Apri il termostato"
+        @click=${this._open}
+        @keydown=${(e) => (e.key === "Enter" || e.key === " ") && (e.preventDefault(), this._open())}
+      >
+        <span class="ico">${L("flame")}</span>
+        <div class="text">
+          ${this._config.room ? E`<p class="card-sub">${this._config.room}</p>` : null}
+          <h2 class="card-title">${U(e, this._config.name ?? "Riscaldamento")}</h2>
+          <div class="state">${s}</div>
+        </div>
+        <div class="temp">
+          <span class="num">${i === void 0 ? "—" : i.toFixed(1)}</span><sup>°</sup>
+        </div>
+      </div>
+    `;
+	}
+}, Et = "0.4.0", Dt = [
 	{
 		tag: "luxury-light-group-card",
-		cls: ft,
+		cls: gt,
 		name: "Luxury · Gruppo luci",
 		description: "Le luci di una stanza in riquadri, con contatore e interruttore generale."
 	},
 	{
 		tag: "luxury-light-card",
-		cls: lt,
+		cls: pt,
 		name: "Luxury · Luce",
 		description: "Una singola luce: acceso/spento e, se supportata, luminosità."
 	},
 	{
 		tag: "luxury-dimmer-card",
-		cls: Ze,
+		cls: nt,
 		name: "Luxury · Dimmer",
 		description: "Dimmer grande con slider della luminosità."
 	},
 	{
 		tag: "luxury-thermostat-card",
-		cls: gt,
+		cls: St,
 		name: "Luxury · Riscaldamento",
 		description: "Termostato solo riscaldamento con quadrante circolare."
 	},
 	{
 		tag: "luxury-cover-card",
-		cls: Je,
+		cls: $e,
 		name: "Luxury · Tapparella",
 		description: "Tapparella con finestra trascinabile, su/stop/giù e aperture rapide."
 	},
 	{
 		tag: "luxury-energy-card",
-		cls: at,
+		cls: dt,
 		name: "Luxury · Energia",
 		description: "Flusso solare, casa e rete, batteria, grafico di oggi e totali."
+	},
+	{
+		tag: "luxury-thermostat-mini-card",
+		cls: Tt,
+		name: "Luxury · Riscaldamento mini",
+		description: "Riga con temperatura attuale e impostata; al tocco apre il termostato completo."
+	},
+	{
+		tag: "luxury-button-card",
+		cls: We,
+		name: "Luxury · Pulsante",
+		description: "Pulsante per qualsiasi azione: chiudi tutte le tapparelle, spegni tutte le luci, scene…"
 	}
 ];
-for (let e of vt) customElements.get(e.tag) || customElements.define(e.tag, e.cls);
+for (let e of Dt) customElements.get(e.tag) || customElements.define(e.tag, e.cls);
 window.customCards = window.customCards ?? [];
-for (let e of vt) window.customCards.some((t) => t.type === e.tag) || window.customCards.push({
+for (let e of Dt) window.customCards.some((t) => t.type === e.tag) || window.customCards.push({
 	type: e.tag,
 	name: e.name,
 	description: e.description,
@@ -2316,5 +2749,5 @@ if (!document.querySelector("link[data-luxury-cards-font]")) {
 	let e = document.createElement("link");
 	e.rel = "stylesheet", e.href = "https://fonts.googleapis.com/css2?family=Manrope:wght@200;300;400;500;600&display=swap", e.dataset.luxuryCardsFont = "", document.head.appendChild(e);
 }
-console.info(`%c LUXURY CARDS %c v${_t} `, "background:#C8A46A;color:#1A1714;font-weight:600", "color:#C8A46A");
+console.info(`%c LUXURY CARDS %c v${Et} `, "background:#C8A46A;color:#1A1714;font-weight:600", "color:#C8A46A");
 //#endregion

@@ -10,6 +10,8 @@ Custom card minimaliste per Home Assistant: tema scuro, accento oro, tipografia 
 | Riscaldamento | `custom:luxury-thermostat-card` | ✅ |
 | Tapparella | `custom:luxury-cover-card` | ✅ |
 | Energia | `custom:luxury-energy-card` | ✅ |
+| Riscaldamento mini | `custom:luxury-thermostat-mini-card` | ✅ |
+| Pulsante | `custom:luxury-button-card` | ✅ |
 
 ## Installazione
 
@@ -115,8 +117,41 @@ history: true           # grafico del consumo di oggi (richiede entities.home)
 ```
 Se manca uno tra `home` e `grid`, viene calcolato dagli altri valori. L'autonomia è `1 − prelievo / consumo` della giornata.
 
+### Riscaldamento mini
+```yaml
+type: custom:luxury-thermostat-mini-card
+entity: climate.soggiorno
+room: Soggiorno     # opzionale
+```
+Una riga in stile "luce singola" con temperatura attuale e impostata. Al tocco si apre il termostato completo in una finestra (si chiude con ✕, tocco fuori, Esc o il tasto indietro). Accetta le stesse opzioni della card Riscaldamento.
+
+### Pulsante
+Esegue qualsiasi azione di Home Assistant, con lo stesso formato di `tap_action` delle card native (e di Mushroom):
+
+```yaml
+type: custom:luxury-button-card
+name: Apri tutto
+room: Tapparelle          # opzionale, sopra il nome
+secondary: Tutte le stanze  # opzionale, sotto il nome
+icon: blinds_open         # o qualsiasi mdi:…
+layout: row               # row (default) | tile (riquadro piccolo)
+tap_action:
+  action: perform-action
+  perform_action: cover.open_cover
+  target:
+    device_id:
+      - daed95baaf7fe0975ab40c55f4d03093
+      - cd01efd832b5e62b9da8340d8b897e1b
+  confirmation:           # opzionale: chiede conferma prima di eseguire
+    text: Aprire tutte le tapparelle?
+hold_action:              # opzionale
+  action: navigate
+  navigation_path: /lovelace/tapparelle
+```
+Dopo il tocco l'icona si illumina e compare "Fatto" per un attimo. Nell'editor grafico l'azione si sceglie con il selettore standard di Home Assistant.
+
 ### Icone
-Icone integrate: `bulb`, `chandelier`, `floor`, `table`, `ceiling`, `spot`, `strip`.
+Icone integrate: `bulb`, `chandelier`, `floor`, `table`, `ceiling`, `spot`, `strip`, `blinds`, `blinds_open`, `blinds_closed`, `power`, `scene`, `moon`, `flame`, `thermometer`.
 Puoi usare anche qualsiasi icona di Home Assistant, es. `icon: mdi:lamp`.
 
 ## Personalizzazione colori
